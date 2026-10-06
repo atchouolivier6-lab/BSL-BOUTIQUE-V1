@@ -3,44 +3,44 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>BSL La Puissance Zénith</title>
+<title>BSL La Puissance Zénith — Énergie solaire, électronique, télécoms</title>
+<meta name="description" content="BSL La Puissance Zénith à Baname : énergie solaire, électronique, télécommunications et commerce général.">
+<meta name="theme-color" content="#14213d">
 <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/home.css">
 </head>
 <body>
-<header class="topbar">
-  <div class="container">
-    <strong>BSL Zénith</strong>
-    <span class="spacer"></span>
-    <button class="btn ghost sm" data-theme-btn aria-label="Changer le thème">🌙</button>
-  </div>
-</header>
+<div id="header"></div>
 
-<main class="container" style="padding-top:24px">
-  <h1>Test de connexion</h1>
-  <div class="card" id="status">Vérification…</div>
+<section class="hero">
+  <div class="container">
+    <h1>L'énergie et la technologie<br>à votre service</h1>
+    <p>Solutions d'énergie solaire, électronique, télécommunications et commerce général. Ouvert 24h/24 à Baname.</p>
+    <div class="row" id="heroBtns"></div>
+    <p id="heroNote" style="margin:14px 0 0;font-size:14px;opacity:.85"></p>
+  </div>
+</section>
+
+<main class="container">
+  <section class="block" id="newsSec" hidden>
+    <h2>📢 Nouveautés du site</h2>
+    <div class="news" id="news"></div>
+  </section>
+
+  <section class="block" id="produits">
+    <h2>Nos produits</h2>
+    <div class="tabs" id="tabs"></div>
+    <div id="plist"><p class="empty">Chargement…</p></div>
+  </section>
 </main>
+
+<div id="footer"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
 <script src="js/supabase.js"></script>
-<script>
-BSLTheme.init();
-(async () => {
-  const out = document.getElementById("status");
-  try {
-    const s = await sb.from("settings").select("value").eq("key", "shop").single();
-    if (s.error) throw s.error;
-    const t = await sb.from("v_teaser").select("id");
-    if (t.error) throw t.error;
-    out.innerHTML =
-      '<p class="ok"> Connexion à la base réussie</p>' +
-      "<p>Boutique : <b>" + s.data.value.name + "</b></p>" +
-      "<p>Produits visibles publiquement : <b>" + t.data.length + "</b></p>";
-  } catch (e) {
-    out.innerHTML = '<p class="ko"> Erreur</p><p>' + (e.message || e) + "</p>";
-  }
-})();
-</script>
+<script src="js/layout.js"></script>
+<script src="js/home.js"></script>
 </body>
   </html>

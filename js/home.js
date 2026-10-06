@@ -10,6 +10,16 @@
 
   function renderHero() {
     const wa = BSL.shop.whatsapp_link || "#";
+    const first = BSL.profile && BSL.profile.first_name ? BSL.profile.first_name : "";
+    if (BSL.user) {
+      $("#heroTitle").textContent = first ? `Bienvenue, ${first} 👋` : "Bienvenue 👋";
+      $("#heroText").textContent =
+        "Merci de faire partie de BSL Zénith. Découvrez tous nos produits, nos nouveautés et nos promotions, et commandez directement sur WhatsApp.";
+    } else {
+      $("#heroTitle").innerHTML = "L'énergie et la technologie<br>à votre service";
+      $("#heroText").textContent =
+        "Solutions d'énergie solaire, électronique, télécommunications et commerce général. Ouvert 24h/24 à Baname.";
+    }
     $("#heroBtns").innerHTML = BSL.user
       ? `<a class="btn" href="#produits">Voir les produits</a>
          <a class="btn wa" href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>`

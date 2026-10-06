@@ -59,3 +59,8 @@ footer.site a{text-decoration:underline}
 .msg.err{border-color:var(--ko);color:var(--ko)}
 .msg.good{border-color:var(--ok);color:var(--ok)}
 .modal-box .btn{width:100%}
+
+/* ===== Réseaux sociaux ===== */
+.socials{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+footer.site a.soc{display:inline-flex;align-items:center;gap:8px;padding:6px 16px 6px 8px;border:1px solid var(--bd);background:var(--bg);border-radius:99px;font-weight:600;text-decoration:none;transition:transform .15s,box-shadow .15s}
+footer.site a.soc:hover{transform:translateY(-1px);box-shadow:var(--shadow)}

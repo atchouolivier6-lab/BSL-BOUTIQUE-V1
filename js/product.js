@@ -2,7 +2,7 @@
   const $ = s => document.querySelector(s);
   const { esc, fmt } = BSL;
   const root = $("#pbox");
-  let IMGS = [], cur = 0;
+  let IMGS = [], cur = 0, S = null;
 
   await BSL.ready;
   const id = new URLSearchParams(location.search).get("id");
@@ -26,13 +26,24 @@
   if (!id) return notFound();
   const { data: p, error } = await sb.from("v_products").select("*").eq("id", id).maybeSingle();
   if (error || !p) return notFound();
-  const imgRes = await sb.from("product_images").select("url")
-    .eq("product_id", id).order("is_cover", { ascending: false }).order("position");
+  const uid = BSL.user.id;
+  const [imgRes, likeRes, favRes] = await Promise.all([
+    sb.from("product_images").select("url").eq("product_id", id)
+      .order("is_cover", { ascending: false }).order("position"),
+    sb.from("product_likes").select("product_id").eq("product_id", id).eq("user_id", uid).maybeSingle(),
+    sb.from("product_favorites").select("product_id").eq("product_id", id).eq("user_id", uid).maybeSingle(),
+  ]);
   IMGS = (imgRes.data || []).map(i => i.url);
+  S = {
+    like:  { on: !!likeRes.data, n: p.likes_count || 0,  table: "product_likes" },
+    fav:   { on: !!favRes.data,  n: p.favs_count || 0,   table: "product_favorites" },
+    share: { n: p.shares_count || 0 },
+    view:  { n: p.views_count || 0 },
+  };
 
   document.title = p.name + " — BSL Zénith";
+  if (logEvent("view")) S.view.n++;   // cette visite compte (une fois par session)
   render(p);
-  logEvent("view");
   loadRelated(p);
 
   /* ----- Affichage ----- */
@@ -59,6 +70,7 @@
             ${p.on_promo ? '<span class="badge">PROMO</span>' : ""}${p.is_new ? '<span class="badge new">NOUVEAU</span>' : ""}</div>
           ${IMGS.length > 1 ? `<div class="thumbs">${IMGS.map((u, k) =>
             `<button class="th ${k ? "" : "on"}" onclick="PROD.show(${k})" aria-label="Photo ${k + 1}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}
+          <div class="social" id="social"></div>
         </div>
         <div class="info">
           ${p.is_published ? "" : '<span class="draft">Brouillon — non visible du public</span><br>'}
@@ -69,12 +81,12 @@
           ${p.description ? `<div class="desc">${esc(p.description).replace(/\n/g, "<br>")}</div>` : ""}
           <div class="actions">
             <a class="btn wa" id="waBtn" href="${waUrl(p)}" target="_blank" rel="noopener">${waLabel}</a>
-            <button class="btn ghost" onclick="PROD.share()">Partager</button>
           </div>
         </div>
       </div>
       <section id="rel"></section>`;
 
+    paint();
     $("#waBtn").addEventListener("click", () => logEvent("whatsapp_click"));
     // Balayage tactile de la galerie
     const g = $("#gmain");
@@ -97,11 +109,42 @@
       : (s.whatsapp_link || "#");
   }
 
+  // Barre sociale sous la photo : J'aime / Favori / Partager / vues
+  function paint() {
+    const el = $("#social");
+    if (!el || !S) return;
+    el.innerHTML = `
+      <button class="sbtn ${S.like.on ? "on" : ""}" onclick="PROD.toggle('like')" aria-pressed="${S.like.on}">
+        <span class="ic">${S.like.on ? "❤️" : "🤍"}</span> J'aime <b>${BSL.n(S.like.n)}</b></button>
+      <button class="sbtn ${S.fav.on ? "on" : ""}" onclick="PROD.toggle('fav')" aria-pressed="${S.fav.on}">
+        <span class="ic">${S.fav.on ? "⭐" : "☆"}</span> Favori <b>${BSL.n(S.fav.n)}</b></button>
+      <button class="sbtn" onclick="PROD.share()"><span class="ic">🔗</span> Partager <b>${BSL.n(S.share.n)}</b></button>
+      <span class="views">👁 <b>${BSL.n(S.view.n)}</b> vue${S.view.n > 1 ? "s" : ""}</span>`;
+  }
+
+  async function toggle(k) {
+    const s = S[k];
+    if (s.busy) return;
+    s.busy = true;
+    const was = s.on;
+    s.on = !was; s.n += was ? -1 : 1; paint();           // affichage immédiat
+    const { error } = was
+      ? await sb.from(s.table).delete().eq("user_id", BSL.user.id).eq("product_id", id)
+      : await sb.from(s.table).insert({ user_id: BSL.user.id, product_id: id });
+    if (error) {                                          // échec : on annule
+      s.on = was; s.n += was ? 1 : -1; paint();
+      alert("Action impossible pour le moment. Réessayez.");
+    }
+    s.busy = false;
+  }
+
+  // Retourne true si l'événement a bien été enregistré
   function logEvent(type) {
     if (type === "view") {
-      try { if (sessionStorage.getItem("v" + id)) return; sessionStorage.setItem("v" + id, "1"); } catch (e) {}
+      try { if (sessionStorage.getItem("v" + id)) return false; sessionStorage.setItem("v" + id, "1"); } catch (e) {}
     }
     sb.from("events").insert({ type, product_id: id }).then(() => {});
+    return true;
   }
 
   async function loadRelated(p) {
@@ -131,11 +174,13 @@
       if (img) img.src = IMGS[k];
       document.querySelectorAll(".th").forEach((b, i) => b.classList.toggle("on", i === k));
     },
+    toggle,
     async share() {
       const data = { title: document.title, url: location.href };
       try {
         if (navigator.share) await navigator.share(data);
         else { await navigator.clipboard.writeText(location.href); alert("Lien copié !"); }
+        logEvent("share"); S.share.n++; paint();          // compté seulement si le partage a abouti
       } catch (e) {}
     },
   };

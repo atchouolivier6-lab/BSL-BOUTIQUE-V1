@@ -67,7 +67,7 @@
       return ADM.toast(error.message || "Modification impossible.", "err");
     }
     m.role = role;
-    ADM.toast(` ${fullName(m) || m.email} : ${label}`);
+    ADM.toast(`${fullName(m) || m.email} : ${label}`);
     draw();
   }
 })();

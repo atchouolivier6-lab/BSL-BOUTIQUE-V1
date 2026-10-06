@@ -17,11 +17,11 @@
     ["admin-produits.html", "", "Produits", true, "staff"],
     ["admin-categories.html", "", "Catégories", true, "staff"],
     ["admin-promotions.html", "", "Promotions", true, "staff"],
-    ["admin-contenu.html", "", "Annonces & FAQ", false, "staff"],
-    ["admin-messages.html", "", "Messages", false, "staff"],
-    ["admin-stats.html", "", "Statistiques", false, "staff"],
+    ["admin-contenu.html", "", "Annonces & FAQ", true, "staff"],
+    ["admin-messages.html", "", "Messages", true, "staff"],
+    ["admin-stats.html", "", "Statistiques", true, "staff"],
     ["admin-membres.html", "", "Membres", true, "admin"],
-    ["admin-parametres.html", "", "Paramètres", false, "admin"],
+    ["admin-parametres.html", "", "Paramètres", true, "admin"],
   ];
 
   /* ---------- Petits outils partagés ---------- */
@@ -47,7 +47,7 @@
     A.cfg = (set.data && set.data.value) || {};
     A.user = sess.data.session ? sess.data.session.user : null;
     if (A.user) {
-      const r = await sb.from("profiles").select("first_name,last_name,role").eq("id", A.user.id).maybeSingle();
+      const r = await sb.from("profiles").select("first_name,last_name,role,avatar_url").eq("id", A.user.id).maybeSingle();
       A.profile = r.data || null;
     }
     A.isStaff = !!A.profile && ["staff", "admin"].includes(A.profile.role);
@@ -119,6 +119,7 @@
       <header class="topbar"><div class="container wide">
         <a class="brand" href="admin.html">${logoHtml(A.cfg.logo_shop, "lg")}<span class="name">Administration</span></a>
         <span class="spacer"></span>
+        <a class="avatar" href="profil.html" title="Mon profil">${A.profile.avatar_url ? `<img src="${esc(A.profile.avatar_url)}" alt="">` : esc((name[0] || "?").toUpperCase())}</a>
         <span class="who muted">${esc(name)} · ${A.isAdmin ? "Admin" : "Employé"}</span>
         <button class="btn ghost sm" data-theme-btn aria-label="Changer le thème">Sombre</button>
         <a class="btn ghost sm" href="index.html">Site</a>

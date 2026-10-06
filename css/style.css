@@ -1,0 +1,57 @@
+/* ===== Thème : clair par défaut, sombre automatique selon le téléphone,
+   ou choisi par le visiteur via le bouton (data-theme sur <html>) ===== */
+:root{
+  --bg:#ffffff; --bg2:#f4f6fa; --tx:#14213d; --mu:#5b6478; --bd:#e2e6ee;
+  --pr:#f59e0b; --on-pr:#14213d; --ok:#16a34a; --ko:#dc2626; --wa:#25d366;
+  --radius:14px; --shadow:0 4px 14px rgba(20,33,61,.10);
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1424; --bg2:#17203a; --tx:#eef1f8; --mu:#9aa5bd; --bd:#2a3556; --shadow:0 4px 14px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1424; --bg2:#17203a; --tx:#eef1f8; --mu:#9aa5bd; --bd:#2a3556; --shadow:0 4px 14px rgba(0,0,0,.4);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--tx);
+  font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  transition:background .2s,color .2s;
+}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+
+.container{width:100%;max-width:1100px;margin:0 auto;padding:0 16px}
+.muted{color:var(--mu)}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  border:0;cursor:pointer;font:inherit;font-weight:700;
+  padding:10px 18px;border-radius:10px;background:var(--pr);color:var(--on-pr);
+}
+.btn.ghost{background:var(--bg2);color:var(--tx);border:1px solid var(--bd)}
+.btn.wa{background:var(--wa);color:#07351a}
+.btn.danger{background:var(--ko);color:#fff}
+.btn.sm{padding:6px 12px;font-size:14px}
+
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius);padding:16px}
+
+input,select,textarea{
+  width:100%;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;
+  background:var(--bg);color:var(--tx);font:inherit;
+}
+label{display:block;font-size:14px;font-weight:600;margin-bottom:12px}
+label input,label select,label textarea{margin-top:4px;font-weight:400}
+
+.topbar{
+  position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--bd);
+  padding-top:env(safe-area-inset-top,0px);
+}
+.topbar .container{display:flex;align-items:center;gap:10px;min-height:58px}
+.spacer{flex:1}
+.ok{color:var(--ok);font-weight:700}
+.ko{color:var(--ko);font-weight:700}

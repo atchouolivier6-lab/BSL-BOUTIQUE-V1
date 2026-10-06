@@ -18,7 +18,7 @@
     <div id="mlist"><p class="muted">Chargement…</p></div>`;
 
   const { data, error } = await sb.from("profiles")
-    .select("id,first_name,last_name,email,role,created_at").order("created_at", { ascending: false }).limit(1000);
+    .select("id,first_name,last_name,email,role,created_at,avatar_url").order("created_at", { ascending: false }).limit(1000);
   if (error) { $("#mlist").innerHTML = `<p class="msg err">Erreur : ${esc(error.message)}</p>`; return; }
   ALL = data || [];
   $("#mq").addEventListener("input", draw);
@@ -42,7 +42,7 @@
       const me = m.id === ADM.user.id;
       const ini = (fullName(m) || m.email || "?").trim().slice(0, 1).toUpperCase();
       return `<div class="mrow">
-        <div class="av">${esc(ini)}</div>
+        <div class="av">${m.avatar_url ? `<img src="${esc(m.avatar_url)}" alt="">` : esc(ini)}</div>
         <div class="grow"><div class="nm">${esc(fullName(m) || "Sans nom")}${me ? " <small>(vous)</small>" : ""}</div>
           <small>${esc(m.email || "")}</small><small>Inscrit le ${date(m.created_at)}</small></div>
         <select data-id="${esc(m.id)}" aria-label="Rôle" ${me ? "disabled title='Vous ne pouvez pas modifier votre propre rôle'" : ""}>

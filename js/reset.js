@@ -40,7 +40,7 @@
         err.textContent = /different|same/i.test(error.message) ? "Choisissez un mot de passe différent de l'ancien." : error.message;
         err.hidden = false; f.querySelector("button").disabled = false; return;
       }
-      box.innerHTML = `<h2 style="margin-top:0"> Mot de passe modifié</h2><p class="muted">Vous êtes connecté. Redirection…</p>`;
+      box.innerHTML = `<h2 style="margin-top:0">Mot de passe modifié</h2><p class="muted">Vous êtes connecté. Redirection…</p>`;
       setTimeout(() => (location.href = "index.html"), 1800);
     };
   }

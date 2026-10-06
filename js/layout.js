@@ -53,10 +53,12 @@
     const items = [
       ["index.html", "", " Accueil"],
       ["catalogue.html", "", "🛍️ Catalogue"],
-      ["catalogue.html", "new", "🆕 Nouveautés"],
+      ["catalogue.html", "new", " Nouveautés"],
       ["catalogue.html", "promo", "🏷️ Promotions"],
     ];
     if (B.user) items.push(["catalogue.html", "fav", "⭐ Favoris"]);
+    items.push(["apropos.html", "", " À propos"], ["contact.html", "", "✉️ Contact"],
+               ["localisation.html", "", " Localisation"], ["faq.html", "", "❓ FAQ"]);
     z.innerHTML = items.map(([pg, flt, label]) =>
       `<a href="${pg}${flt ? "?f=" + flt : ""}" class="${file === pg && f === flt ? "on" : ""}">${label}</a>`).join("");
   }
@@ -83,14 +85,21 @@
   function soc(url, key, label) {
     return url ? `<a class="soc" href="${esc(url)}" target="_blank" rel="noopener" aria-label="${label}">${ICONS[key]}<span>${label}</span></a>` : "";
   }
+  B.socials = function () {
+    const s = B.shop;
+    return `<div class="socials">${soc(s.facebook, "facebook", "Facebook")}${soc(s.tiktok, "tiktok", "TikTok")}${soc(s.whatsapp_link, "whatsapp", "WhatsApp")}</div>`;
+  };
+  B.phones = function () {
+    return (B.shop.phones || []).map(x => `<a href="tel:${esc(x)}">${esc(x)}</a>`).join(" / ");
+  };
   function renderFooter() {
     const s = B.shop, f = $("#footer");
     if (!f) return;
-    const phones = (s.phones || []).map(esc).join(" / ");
     f.innerHTML = `<footer class="site"><div class="container">
       <b>${esc(s.name || "BSL La Puissance Zénith")}</b><br>
-       ${esc(s.address || "")}<br>🕒 ${esc(s.hours || "")}<br>📞 ${phones}<br>
-      <div class="socials">${soc(s.facebook, "facebook", "Facebook")}${soc(s.tiktok, "tiktok", "TikTok")}${soc(s.whatsapp_link, "whatsapp", "WhatsApp")}</div>
+       ${esc(s.address || "")}<br>🕒 ${esc(s.hours || "")}<br>📞 ${B.phones()}<br>
+      <div class="flinks"><a href="apropos.html">À propos</a> · <a href="contact.html">Contact</a> · <a href="localisation.html">Localisation</a> · <a href="faq.html">FAQ</a></div>
+      ${B.socials()}
     </div></footer>`;
   }
 

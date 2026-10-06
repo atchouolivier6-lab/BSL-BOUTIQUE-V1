@@ -77,3 +77,7 @@ a.kpi:hover{border-color:var(--pr)}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--tx);color:var(--bg);padding:11px 18px;border-radius:99px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:60;max-width:92vw;text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 #toast.err{background:var(--ko);color:#fff}
+
+/* ===== Avatars dans la liste des membres ===== */
+.av{overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover;display:block}

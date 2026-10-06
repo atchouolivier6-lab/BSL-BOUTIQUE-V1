@@ -51,14 +51,14 @@
     const file = location.pathname.split("/").pop() || "index.html";
     const f = new URLSearchParams(location.search).get("f") || "";
     const items = [
-      ["index.html", "", " Accueil"],
+      ["index.html", "", "Accueil"],
       ["catalogue.html", "", "🛍️ Catalogue"],
-      ["catalogue.html", "new", " Nouveautés"],
-      ["catalogue.html", "promo", "🏷️ Promotions"],
+      ["catalogue.html", "new", "Nouveautés"],
+      ["catalogue.html", "promo", "Promotions"],
     ];
     if (B.user) items.push(["catalogue.html", "fav", "⭐ Favoris"]);
-    items.push(["apropos.html", "", " À propos"], ["contact.html", "", "✉️ Contact"],
-               ["localisation.html", "", " Localisation"], ["faq.html", "", "❓ FAQ"]);
+    items.push(["apropos.html", "", " À propos"], ["contact.html", "", "Contact"],
+               ["localisation.html", "", " Localisation"], ["faq.html", "", " FAQ"]);
     z.innerHTML = items.map(([pg, flt, label]) =>
       `<a href="${pg}${flt ? "?f=" + flt : ""}" class="${file === pg && f === flt ? "on" : ""}">${label}</a>`).join("");
   }
@@ -72,7 +72,7 @@
     } else {
       const name = B.profile && B.profile.first_name ? B.profile.first_name : "";
       z.innerHTML = `<span class="hi muted">Bonjour ${esc(name)}</span>
-        ${B.isStaff ? '<a class="btn ghost sm" href="admin/index.html">Admin</a>' : ""}
+        ${B.isStaff ? '<a class="btn ghost sm" href="admin.html">Admin</a>' : ""}
         <button class="btn ghost sm" onclick="BSL.logout()">Déconnexion</button>`;
     }
   }
@@ -131,6 +131,16 @@
         <label>E-mail<input name="email" type="email" required autocomplete="email"></label>
         <label>Mot de passe<input name="pass" type="password" required autocomplete="current-password"></label>
         <button class="btn" type="submit">Me connecter</button>
+        <p style="text-align:center;margin:14px 0 0"><a href="#" style="text-decoration:underline;font-size:14px"
+           onclick="BSL.openAuth('reset');return false">Mot de passe oublié ?</a></p>
+      </form>
+
+      <form id="fReset" onsubmit="BSL.reset(event)" hidden>
+        <p class="muted" style="margin-top:0;font-size:14px">Entrez votre e-mail : nous vous envoyons un lien pour choisir un nouveau mot de passe.</p>
+        <label>E-mail<input name="email" type="email" required autocomplete="email"></label>
+        <button class="btn" type="submit">Envoyer le lien</button>
+        <p style="text-align:center;margin:14px 0 0"><a href="#" style="text-decoration:underline;font-size:14px"
+           onclick="BSL.openAuth('login');return false">← Retour à la connexion</a></p>
       </form>
     </div>`;
     m.addEventListener("click", e => { if (e.target === m) B.closeAuth(); });
@@ -150,10 +160,11 @@
   }
 
   B.openAuth = function (mode, info) {
-    mode = mode === "login" ? "login" : "signup";
+    mode = ["login", "reset"].includes(mode) ? mode : "signup";
     $("#authModal").hidden = false;
     document.body.style.overflow = "hidden";
-    $("#amTitle").textContent = mode === "signup" ? "Rejoignez BSL Zénith" : "Bon retour !";
+    $("#amTitle").textContent = mode === "signup" ? "Rejoignez BSL Zénith" : mode === "reset" ? "Mot de passe oublié" : "Bon retour !";
+    $("#fReset").hidden = mode !== "reset";
     $("#fSignup").hidden = mode !== "signup";
     $("#fLogin").hidden = mode !== "login";
     $("#tSignup").classList.toggle("on", mode === "signup");
@@ -204,6 +215,16 @@
     btn.disabled = false;
     if (error) return showErr(friendly(error));
     afterAuth();
+  };
+  B.reset = async function (e) {
+    e.preventDefault();
+    const f = e.target, btn = f.querySelector("button[type=submit]");
+    btn.disabled = true; showErr("");
+    const redirectTo = new URL("reinitialiser.html", location.href).href;
+    const { error } = await sb.auth.resetPasswordForEmail(f.email.value.trim(), { redirectTo });
+    btn.disabled = false;
+    if (error) return showErr(friendly(error));
+    B.openAuth("login", "Si cet e-mail est inscrit, un lien de réinitialisation vient d'être envoyé. Pensez à vérifier vos courriers indésirables.");
   };
   B.logout = async function () { await sb.auth.signOut(); location.href = "index.html"; };
 

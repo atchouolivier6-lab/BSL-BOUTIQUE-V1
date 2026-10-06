@@ -1,0 +1,15 @@
+.pwrap{max-width:640px;margin:0 auto;padding:22px 0 10px;display:grid;gap:16px}
+.pwrap h1{margin:0;font-size:26px}
+.avrow{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.avbtns{display:flex;gap:8px;flex-wrap:wrap}
+.avbtns input[type=file]{display:none}
+.pwrap h2{margin:0 0 12px;font-size:18px}
+.rolepill{display:inline-block;font-size:12px;font-weight:700;padding:2px 10px;border-radius:99px;background:var(--bd);margin-left:6px}
+.rolepill.admin{background:var(--pr);color:var(--on-pr)}
+.rolepill.staff{background:#2563eb;color:#fff}
+.statsrow{display:flex;gap:10px;flex-wrap:wrap}
+.statsrow a{flex:1 1 140px;background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:12px;text-align:center}
+.statsrow b{display:block;font-size:24px}
+.pwrap .msg{margin:0 0 12px}
+.pwrap .row2c{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.pwrap .row2c{grid-template-columns:1fr}}

@@ -64,3 +64,14 @@ footer.site a{text-decoration:underline}
 .socials{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 footer.site a.soc{display:inline-flex;align-items:center;gap:8px;padding:6px 16px 6px 8px;border:1px solid var(--bd);background:var(--bg);border-radius:99px;font-weight:600;text-decoration:none;transition:transform .15s,box-shadow .15s}
 footer.site a.soc:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+
+/* ===== Navigation principale ===== */
+.mainnav{border-top:1px solid var(--bd)}
+.topbar .mainnav .container{display:flex;gap:6px;overflow-x:auto;min-height:0;padding-top:6px;padding-bottom:6px;scrollbar-width:none}
+.mainnav .container::-webkit-scrollbar{display:none}
+.mainnav a{white-space:nowrap;padding:6px 12px;border-radius:99px;font-size:14px;font-weight:600;color:var(--mu)}
+.mainnav a:hover{background:var(--bg2);color:var(--tx)}
+.mainnav a.on{background:var(--pr);color:var(--on-pr)}
+
+/* ===== Compteurs sur les cartes ===== */
+.stats{display:flex;gap:12px;font-size:12px;color:var(--mu);margin-top:3px}

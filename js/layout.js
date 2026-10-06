@@ -40,11 +40,28 @@
         <span class="spacer"></span>
         <button class="btn ghost sm" data-theme-btn aria-label="Changer le thème">🌙</button>
         <span id="authzone"></span>
-      </div></header>`;
+      </div>
+      <nav class="mainnav"><div class="container" id="navzone"></div></nav></header>`;
     renderAuthZone();
     BSLTheme.init();
   }
+  function renderNav() {
+    const z = $("#navzone");
+    if (!z) return;
+    const file = location.pathname.split("/").pop() || "index.html";
+    const f = new URLSearchParams(location.search).get("f") || "";
+    const items = [
+      ["index.html", "", " Accueil"],
+      ["catalogue.html", "", "🛍️ Catalogue"],
+      ["catalogue.html", "new", "🆕 Nouveautés"],
+      ["catalogue.html", "promo", "🏷️ Promotions"],
+    ];
+    if (B.user) items.push(["catalogue.html", "fav", "⭐ Favoris"]);
+    z.innerHTML = items.map(([pg, flt, label]) =>
+      `<a href="${pg}${flt ? "?f=" + flt : ""}" class="${file === pg && f === flt ? "on" : ""}">${label}</a>`).join("");
+  }
   function renderAuthZone() {
+    renderNav();
     const z = $("#authzone");
     if (!z) return;
     if (!B.user) {
@@ -187,6 +204,26 @@
     if (B.user) { location.href = url; return; }
     B.pendingUrl = url;
     B.openAuth("signup", "Inscrivez-vous gratuitement pour voir les détails de ce produit.");
+  };
+
+  // Nombre compact : 1250 -> 1,3 k
+  B.n = n => {
+    n = Number(n) || 0;
+    return n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".", ",").replace(",0", "") + " k" : String(n);
+  };
+  // Carte produit commune (accueil, catalogue)
+  B.card = function (p) {
+    const old = p.old_price != null ? p.old_price : p.price;
+    const img = p.cover_url ? `<img src="${esc(p.cover_url)}" alt="${esc(p.name)}" loading="lazy">` : "📦";
+    const price = p.on_promo
+      ? `<span class="price">${B.fmt(p.final_price)}</span><span class="old">${B.fmt(old)}</span>`
+      : `<span class="price">${B.fmt(p.final_price)}</span>`;
+    return `<button class="pcard" onclick="BSL.openProduct('${esc(p.id)}')">
+      <div class="im">${img}${p.on_promo ? '<span class="badge">PROMO</span>' : ""}${p.is_new ? '<span class="badge new">NOUVEAU</span>' : ""}</div>
+      <div class="b"><span class="n">${esc(p.name)}</span><span class="c">${esc(p.category_name || "")}</span>
+      <div>${price}</div>
+      <div class="stats"><span>❤️ ${B.n(p.likes_count)}</span><span>👁 ${B.n(p.views_count)}</span></div>
+      ${B.user ? "" : '<span class="lock">🔒 Détails après inscription</span>'}</div></button>`;
   };
 
   /* ---------- Démarrage ---------- */

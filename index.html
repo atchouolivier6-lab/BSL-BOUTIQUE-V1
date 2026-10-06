@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BSL La Puissance Zénith</title>
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="container">
+    <strong>BSL Zénith</strong>
+    <span class="spacer"></span>
+    <button class="btn ghost sm" data-theme-btn aria-label="Changer le thème">🌙</button>
+  </div>
+</header>
+
+<main class="container" style="padding-top:24px">
+  <h1>Test de connexion</h1>
+  <div class="card" id="status">Vérification…</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase.js"></script>
+<script>
+BSLTheme.init();
+(async () => {
+  const out = document.getElementById("status");
+  try {
+    const s = await sb.from("settings").select("value").eq("key", "shop").single();
+    if (s.error) throw s.error;
+    const t = await sb.from("v_teaser").select("id");
+    if (t.error) throw t.error;
+    out.innerHTML =
+      '<p class="ok"> Connexion à la base réussie</p>' +
+      "<p>Boutique : <b>" + s.data.value.name + "</b></p>" +
+      "<p>Produits visibles publiquement : <b>" + t.data.length + "</b></p>";
+  } catch (e) {
+    out.innerHTML = '<p class="ko"> Erreur</p><p>' + (e.message || e) + "</p>";
+  }
+})();
+</script>
+</body>
+  </html>

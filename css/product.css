@@ -37,3 +37,12 @@
 #rel{margin-top:34px}
 #rel h2{font-size:20px;margin:0 0 12px}
 a.pcard{text-decoration:none}
+
+/* ===== Barre sociale (J'aime / Favori / Partager / vues) ===== */
+.social{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px;padding:10px;border:1px solid var(--bd);border-radius:var(--radius);background:var(--bg2)}
+.sbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);padding:8px 12px;border-radius:99px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.sbtn b{font-weight:700;color:var(--mu)}
+.sbtn.on{border-color:var(--pr);background:color-mix(in srgb,var(--pr) 18%,var(--bg))}
+.sbtn .ic{display:inline-block;transition:transform .15s}
+.sbtn:active .ic{transform:scale(1.4)}
+.views{margin-left:auto;font-size:14px;color:var(--mu)}

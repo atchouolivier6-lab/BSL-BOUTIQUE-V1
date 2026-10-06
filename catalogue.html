@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Catalogue — BSL Zénith</title>
+<meta name="theme-color" content="#14213d">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="css/catalog.css">
+</head>
+<body>
+<div id="header"></div>
+
+<main class="container">
+  <div class="chead">
+    <h1 id="ctitle">Catalogue</h1>
+    <p class="muted" id="csub"></p>
+  </div>
+
+  <div id="ctools">
+    <div class="tools">
+      <div class="search"><span>🔍</span><input id="q" type="search" placeholder="Rechercher un produit…" autocomplete="off"></div>
+      <select id="sort" aria-label="Trier">
+        <option value="recent">Plus récents</option>
+        <option value="price_asc">Prix croissant</option>
+        <option value="price_desc">Prix décroissant</option>
+        <option value="popular">Populaires</option>
+        <option value="views">Plus vus</option>
+      </select>
+      <button class="btn ghost" id="ftoggle" type="button">⚙️ Filtres</button>
+    </div>
+
+    <div class="chips" id="chips"></div>
+
+    <div class="card fpanel" id="fpanel" hidden>
+      <label>Prix minimum (FCFA)<input id="pmin" type="number" min="0" inputmode="numeric" placeholder="0"></label>
+      <label>Prix maximum (FCFA)<input id="pmax" type="number" min="0" inputmode="numeric" placeholder="Illimité"></label>
+      <div class="checks">
+        <label id="wPromo"><input type="checkbox" id="fPromo"> Promotions seulement</label>
+        <label id="wNew"><input type="checkbox" id="fNew"> Nouveautés seulement</label>
+        <label id="wStock"><input type="checkbox" id="fStock"> Produits en stock seulement</label>
+        <button class="btn ghost sm" id="freset" type="button">Réinitialiser</button>
+      </div>
+    </div>
+
+    <div class="count" id="count"></div>
+  </div>
+
+  <div id="clist"><p class="empty">Chargement…</p></div>
+  <button class="btn ghost more" id="more" hidden>Voir plus de produits</button>
+</main>
+
+<div id="footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/catalogue.js"></script>
+</body>
+</html>

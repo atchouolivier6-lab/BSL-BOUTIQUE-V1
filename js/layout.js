@@ -57,16 +57,23 @@
         <button class="btn ghost sm" onclick="BSL.logout()">Déconnexion</button>`;
     }
   }
+  const TT = "M15.2 8v11.2a3.4 3.4 0 1 1-3.4-3.4M15.2 8c.4 2.6 2 4.2 4.6 4.5";
+  const ICONS = {
+    facebook: '<svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#1877F2"/><path d="M17.5 26v-8.2h2.8l.5-3.3h-3.3v-2.1c0-.9.4-1.7 1.8-1.7h1.6V7.9c-.3 0-1.3-.2-2.4-.2-2.5 0-4.1 1.5-4.1 4.2v2.6h-2.7v3.3h2.7V26z" fill="#fff"/></svg>',
+    tiktok: `<svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#000"/><g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="${TT}" stroke="#25F4EE" transform="translate(-.9 -.6)"/><path d="${TT}" stroke="#FE2C55" transform="translate(.9 .6)"/><path d="${TT}" stroke="#fff"/></g></svg>`,
+    whatsapp: '<svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#25D366"/><path d="M16 7.5a8.5 8.5 0 0 0-7.3 12.8L7.6 24.5l4.3-1.1A8.5 8.5 0 1 0 16 7.5z" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"/><path d="M12.9 12.2c-.3.5-.3 1.2.1 2 .9 1.8 2.3 3.1 4.2 3.9.8.3 1.4.2 1.8-.2l.4-.6c.1-.2.1-.4-.1-.5l-1.3-.8c-.2-.1-.4-.1-.5.1l-.3.4c-.8-.3-1.5-1-1.8-1.8l.4-.3c.2-.1.2-.3.1-.5l-.7-1.3c-.1-.2-.3-.2-.5-.1z" fill="#fff"/></svg>',
+  };
+  function soc(url, key, label) {
+    return url ? `<a class="soc" href="${esc(url)}" target="_blank" rel="noopener" aria-label="${label}">${ICONS[key]}<span>${label}</span></a>` : "";
+  }
   function renderFooter() {
     const s = B.shop, f = $("#footer");
     if (!f) return;
     const phones = (s.phones || []).map(esc).join(" / ");
     f.innerHTML = `<footer class="site"><div class="container">
       <b>${esc(s.name || "BSL La Puissance Zénith")}</b><br>
-      📍 ${esc(s.address || "")}<br>🕒 ${esc(s.hours || "")}<br>📞 ${phones}<br>
-      ${s.facebook ? `<a href="${esc(s.facebook)}" target="_blank" rel="noopener">Facebook</a> · ` : ""}
-      ${s.tiktok ? `<a href="${esc(s.tiktok)}" target="_blank" rel="noopener">TikTok</a> · ` : ""}
-      ${s.whatsapp_link ? `<a href="${esc(s.whatsapp_link)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}
+       ${esc(s.address || "")}<br>🕒 ${esc(s.hours || "")}<br>📞 ${phones}<br>
+      <div class="socials">${soc(s.facebook, "facebook", "Facebook")}${soc(s.tiktok, "tiktok", "TikTok")}${soc(s.whatsapp_link, "whatsapp", "WhatsApp")}</div>
     </div></footer>`;
   }
 

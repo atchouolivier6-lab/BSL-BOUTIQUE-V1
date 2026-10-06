@@ -38,7 +38,7 @@
       `<header class="topbar"><div class="container">
         <a class="brand" href="index.html">${logo}<span class="name">BSL Zénith</span></a>
         <span class="spacer"></span>
-        <button class="btn ghost sm" data-theme-btn aria-label="Changer le thème">🌙</button>
+        <button class="btn ghost sm" data-theme-btn aria-label="Changer le thème">Sombre</button>
         <span id="authzone"></span>
       </div>
       <nav class="mainnav"><div class="container" id="navzone"></div></nav></header>`;
@@ -52,13 +52,13 @@
     const f = new URLSearchParams(location.search).get("f") || "";
     const items = [
       ["index.html", "", "Accueil"],
-      ["catalogue.html", "", "🛍️ Catalogue"],
+      ["catalogue.html", "", "Catalogue"],
       ["catalogue.html", "new", "Nouveautés"],
       ["catalogue.html", "promo", "Promotions"],
     ];
-    if (B.user) items.push(["catalogue.html", "fav", "⭐ Favoris"]);
-    items.push(["apropos.html", "", " À propos"], ["contact.html", "", "Contact"],
-               ["localisation.html", "", " Localisation"], ["faq.html", "", " FAQ"]);
+    if (B.user) items.push(["catalogue.html", "fav", "Favoris"]);
+    items.push(["apropos.html", "", "À propos"], ["contact.html", "", "Contact"],
+               ["localisation.html", "", "Localisation"], ["faq.html", "", "FAQ"]);
     z.innerHTML = items.map(([pg, flt, label]) =>
       `<a href="${pg}${flt ? "?f=" + flt : ""}" class="${file === pg && f === flt ? "on" : ""}">${label}</a>`).join("");
   }
@@ -97,7 +97,7 @@
     if (!f) return;
     f.innerHTML = `<footer class="site"><div class="container">
       <b>${esc(s.name || "BSL La Puissance Zénith")}</b><br>
-       ${esc(s.address || "")}<br>🕒 ${esc(s.hours || "")}<br>📞 ${B.phones()}<br>
+      Adresse : ${esc(s.address || "")}<br>Horaires : ${esc(s.hours || "")}<br>Tél : ${B.phones()}<br>
       <div class="flinks"><a href="apropos.html">À propos</a> · <a href="contact.html">Contact</a> · <a href="localisation.html">Localisation</a> · <a href="faq.html">FAQ</a></div>
       ${B.socials()}
     </div></footer>`;
@@ -108,7 +108,7 @@
     const m = document.createElement("div");
     m.className = "modal"; m.id = "authModal"; m.hidden = true;
     m.innerHTML = `<div class="modal-box" role="dialog" aria-modal="true">
-      <button class="x" aria-label="Fermer" onclick="BSL.closeAuth()">✕</button>
+      <button class="x" aria-label="Fermer" onclick="BSL.closeAuth()">&times;</button>
       <h2 id="amTitle"></h2>
       <p id="amInfo" class="msg" hidden></p>
       <div class="tabs">
@@ -236,6 +236,7 @@
     B.openAuth("signup", "Inscrivez-vous gratuitement pour voir les détails de ce produit.");
   };
 
+  B.noimg = '<svg viewBox="0 0 48 48" width="40%" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color:var(--mu);opacity:.55"><rect x="6" y="9" width="36" height="30" rx="4"/><circle cx="17" cy="20" r="3.5"/><path d="M6 34l10-9 8 7 6-5 12 10"/></svg>';
   // Nombre compact : 1250 -> 1,3 k
   B.n = n => {
     n = Number(n) || 0;
@@ -244,7 +245,7 @@
   // Carte produit commune (accueil, catalogue)
   B.card = function (p) {
     const old = p.old_price != null ? p.old_price : p.price;
-    const img = p.cover_url ? `<img src="${esc(p.cover_url)}" alt="${esc(p.name)}" loading="lazy">` : "📦";
+    const img = p.cover_url ? `<img src="${esc(p.cover_url)}" alt="${esc(p.name)}" loading="lazy">` : B.noimg;
     const price = p.on_promo
       ? `<span class="price">${B.fmt(p.final_price)}</span><span class="old">${B.fmt(old)}</span>`
       : `<span class="price">${B.fmt(p.final_price)}</span>`;
@@ -252,8 +253,8 @@
       <div class="im">${img}${p.on_promo ? '<span class="badge">PROMO</span>' : ""}${p.is_new ? '<span class="badge new">NOUVEAU</span>' : ""}</div>
       <div class="b"><span class="n">${esc(p.name)}</span><span class="c">${esc(p.category_name || "")}</span>
       <div>${price}</div>
-      <div class="stats"><span>❤️ ${B.n(p.likes_count)}</span><span>👁 ${B.n(p.views_count)}</span></div>
-      ${B.user ? "" : '<span class="lock">🔒 Détails après inscription</span>'}</div></button>`;
+      <div class="stats"><span>${B.n(p.likes_count)} j'aime</span><span>${B.n(p.views_count)} vues</span></div>
+      ${B.user ? "" : '<span class="lock">Détails après inscription</span>'}</div></button>`;
   };
 
   /* ---------- Démarrage ---------- */

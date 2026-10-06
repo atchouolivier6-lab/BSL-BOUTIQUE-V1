@@ -44,7 +44,7 @@
   const max = Math.max(1, ...(top.map(p => p.views_count || 0)));
   const panels = [];
 
-  panels.push(`<div class="panel"><h2>🔥 Produits les plus vus</h2>${
+  panels.push(`<div class="panel"><h2> Produits les plus vus</h2>${
     top.length && max > 0 && top[0].views_count
       ? top.map(p => `<div class="row2"><div class="grow"><div class="t">${esc(p.name)}</div>
           <div class="bar"><i style="width:${(p.views_count || 0) / max * 100}%"></i></div></div>
@@ -56,10 +56,10 @@
     alerts.length
       ? alerts.map(p => `<div class="row2"><div class="grow t">${esc(p.name)}</div>
           <span class="pill ${p.stock}">${p.stock === "out" ? "Rupture" : "Limité" + (p.quantity != null ? " (" + p.quantity + ")" : "")}</span></div>`).join("")
-      : '<div class="muted-empty">✅ Aucun problème de stock.</div>'}</div>`);
+      : '<div class="muted-empty"> Aucun problème de stock.</div>'}</div>`);
 
   const msgs = msgsRes.data || [];
-  panels.push(`<div class="panel"><h2>✉️ Derniers messages</h2>${
+  panels.push(`<div class="panel"><h2> Derniers messages</h2>${
     msgs.length
       ? msgs.map(m => `<div class="row2"><div class="grow"><div class="t">${m.is_read ? "" : "🔵 "}${esc(m.name || "Anonyme")}</div>
           <small>${esc((m.body || "").slice(0, 70))}${(m.body || "").length > 70 ? "…" : ""}</small></div><small>${date(m.created_at)}</small></div>`).join("")
@@ -68,7 +68,7 @@
   if (ADM.isAdmin) {
     const R = { admin: "Admin", staff: "Employé", member: "Membre" };
     const rec = recent.data || [];
-    panels.push(`<div class="panel"><h2>👥 Derniers inscrits</h2>${
+    panels.push(`<div class="panel"><h2> Derniers inscrits</h2>${
       rec.length
         ? rec.map(m => `<div class="row2"><div class="grow"><div class="t">${esc((m.first_name + " " + m.last_name).trim() || m.email)}</div>
             <small>${date(m.created_at)}</small></div><span class="pill ${m.role}">${R[m.role]}</span></div>`).join("")

@@ -62,16 +62,7 @@
       : `<p class="empty">Aucun produit pour le moment.</p>`;
   }
 
-  function card(p) {
-    const img = p.cover_url ? `<img src="${esc(p.cover_url)}" alt="${esc(p.name)}" loading="lazy">` : "📦";
-    const price = p.on_promo
-      ? `<span class="price">${fmt(p.final_price)}</span><span class="old">${fmt(p.old_price)}</span>`
-      : `<span class="price">${fmt(p.final_price)}</span>`;
-    return `<button class="pcard" onclick="BSL.openProduct('${esc(p.id)}')">
-      <div class="im">${img}${p.on_promo ? '<span class="badge">PROMO</span>' : ""}${p.is_new ? '<span class="badge new">NOUVEAU</span>' : ""}</div>
-      <div class="b"><span class="n">${esc(p.name)}</span><span class="c">${esc(p.category_name || "")}</span>
-      <div>${price}</div>${BSL.user ? "" : '<span class="lock">🔒 Détails après inscription</span>'}</div></button>`;
-  }
+  const card = BSL.card;
 
   window.HOME = { tab(t) { TAB = t; renderProducts(); } };
 })();

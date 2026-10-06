@@ -55,3 +55,9 @@ label input,label select,label textarea{margin-top:4px;font-weight:400}
 .spacer{flex:1}
 .ok{color:var(--ok);font-weight:700}
 .ko{color:var(--ko);font-weight:700}
+
+/* ===== Avatar (photo de profil) ===== */
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--pr);color:var(--on-pr);display:grid;place-items:center;font-weight:800;font-size:14px;overflow:hidden;flex:0 0 auto}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar.lg{width:104px;height:104px;font-size:38px}
+@media(max-width:520px){.logged .brand .name{display:none}}

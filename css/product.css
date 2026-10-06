@@ -1,0 +1,39 @@
+.back{display:inline-block;margin:18px 0 12px;color:var(--mu);font-size:14px}
+.back:hover{color:var(--tx)}
+
+.pgrid{display:grid;gap:24px;grid-template-columns:1fr}
+@media(min-width:800px){.pgrid{grid-template-columns:1.1fr 1fr;align-items:start}}
+
+/* Galerie */
+.gmain{aspect-ratio:1/1;border-radius:var(--radius);background:var(--bg2);border:1px solid var(--bd);overflow:hidden;display:grid;place-items:center;font-size:80px;position:relative;touch-action:pan-y;user-select:none}
+.gmain img{width:100%;height:100%;object-fit:cover}
+.thumbs{display:flex;gap:8px;margin-top:10px;overflow-x:auto;padding-bottom:4px}
+.th{flex:0 0 64px;height:64px;padding:0;border:2px solid transparent;border-radius:10px;overflow:hidden;background:var(--bg2);cursor:pointer}
+.th.on{border-color:var(--pr)}
+.th img{width:100%;height:100%;object-fit:cover}
+
+/* Infos */
+.info h1{margin:0 0 4px;font-size:clamp(22px,4vw,30px);line-height:1.2}
+.cat{color:var(--mu);margin:0 0 12px}
+.big{font-size:28px;font-weight:800}
+.big .old{font-size:16px}
+.save{background:var(--ko);color:#fff;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:8px;vertical-align:middle}
+.until{font-size:13px;color:var(--mu);margin-top:2px}
+.stock{display:flex;align-items:center;gap:8px;font-weight:700;margin:14px 0}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--ok)}
+.stock.low .dot{background:var(--pr)}
+.stock.out .dot{background:var(--ko)}
+.desc{margin:14px 0;line-height:1.65}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.actions .btn.wa{flex:1 1 230px;padding:14px 18px;font-size:17px}
+.draft{background:var(--pr);color:var(--on-pr);font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;display:inline-block;margin-bottom:8px}
+
+/* Accès réservé */
+.gate{max-width:480px;margin:50px auto;text-align:center}
+.gate h2{margin-top:0}
+.gate .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+
+/* Produits similaires */
+#rel{margin-top:34px}
+#rel h2{font-size:20px;margin:0 0 12px}
+a.pcard{text-decoration:none}

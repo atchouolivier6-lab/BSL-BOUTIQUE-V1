@@ -22,7 +22,7 @@
     B.user = data.session ? data.session.user : null;
     B.profile = null;
     if (B.user) {
-      const r = await sb.from("profiles").select("first_name,last_name,role").eq("id", B.user.id).single();
+      const r = await sb.from("profiles").select("first_name,last_name,role,avatar_url").eq("id", B.user.id).single();
       B.profile = r.data || null;
     }
     B.isStaff = !!B.profile && ["staff", "admin"].includes(B.profile.role);
@@ -66,12 +66,16 @@
     renderNav();
     const z = $("#authzone");
     if (!z) return;
+    document.body.classList.toggle("logged", !!B.user);
     if (!B.user) {
       z.innerHTML = `<button class="btn sm" onclick="BSL.openAuth('signup')">S'inscrire</button>
                      <button class="btn ghost sm" onclick="BSL.openAuth('login')">Connexion</button>`;
     } else {
       const name = B.profile && B.profile.first_name ? B.profile.first_name : "";
-      z.innerHTML = `<span class="hi muted">Bonjour ${esc(name)}</span>
+      const ini = ((name || (B.user.email || "?"))[0] || "?").toUpperCase();
+      const av = `<a class="avatar" href="profil.html" aria-label="Mon profil" title="Mon profil">${
+        B.profile && B.profile.avatar_url ? `<img src="${esc(B.profile.avatar_url)}" alt="">` : esc(ini)}</a>`;
+      z.innerHTML = `<span class="hi muted">Bonjour ${esc(name)}</span>${av}
         ${B.isStaff ? '<a class="btn ghost sm" href="admin.html">Admin</a>' : ""}
         <button class="btn ghost sm" onclick="BSL.logout()">Déconnexion</button>`;
     }
@@ -85,6 +89,7 @@
   function soc(url, key, label) {
     return url ? `<a class="soc" href="${esc(url)}" target="_blank" rel="noopener" aria-label="${label}">${ICONS[key]}<span>${label}</span></a>` : "";
   }
+  B.renderAuthZone = renderAuthZone;
   B.socials = function () {
     const s = B.shop;
     return `<div class="socials">${soc(s.facebook, "facebook", "Facebook")}${soc(s.tiktok, "tiktok", "TikTok")}${soc(s.whatsapp_link, "whatsapp", "WhatsApp")}</div>`;

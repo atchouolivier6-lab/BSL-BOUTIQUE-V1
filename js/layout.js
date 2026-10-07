@@ -105,8 +105,47 @@
       Adresse : ${esc(s.address || "")}<br>Horaires : ${esc(s.hours || "")}<br>Tél : ${B.phones()}<br>
       <div class="flinks"><a href="apropos.html">À propos</a> · <a href="contact.html">Contact</a> · <a href="localisation.html">Localisation</a> · <a href="faq.html">FAQ</a></div>
       ${B.socials()}
+      <div class="installrow"><button class="btn ghost sm" id="pwaBtn" type="button" hidden onclick="BSL.install()">Installer l'application</button>
+        <span class="muted" id="iosHint" hidden>Sur iPhone : appuyez sur Partager, puis sur « Sur l'écran d'accueil ».</span></div>
     </div></footer>`;
+    updateInstallUI();
   }
+
+  /* ---------- Application installable (PWA) ---------- */
+  let deferredInstall = null;
+  const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  function updateInstallUI() {
+    const b = $("#pwaBtn"), h = $("#iosHint");
+    if (!b || !h) return;
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    b.hidden = !deferredInstall || isStandalone();
+    h.hidden = !ios || isStandalone();
+  }
+  addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstall = e; updateInstallUI(); });
+  addEventListener("appinstalled", () => { deferredInstall = null; updateInstallUI(); });
+  B.install = async function () {
+    if (!deferredInstall) return;
+    deferredInstall.prompt();
+    try { await deferredInstall.userChoice; } catch (e) {}
+    deferredInstall = null; updateInstallUI();
+  };
+
+  // Balises communes ajoutées automatiquement sur toutes les pages publiques
+  function injectHead() {
+    const h = document.head;
+    const add = (tag, attrs) => { const el = document.createElement(tag); for (const k in attrs) el.setAttribute(k, attrs[k]); h.appendChild(el); };
+    if (!document.querySelector("link[rel=manifest]")) add("link", { rel: "manifest", href: "manifest.webmanifest" });
+    if (!document.querySelector("link[rel=apple-touch-icon]")) add("link", { rel: "apple-touch-icon", href: "icons/apple-touch-icon.png" });
+    if (!document.querySelector("link[rel=icon]")) add("link", { rel: "icon", type: "image/png", href: "icons/favicon-48.png" });
+    if (!document.querySelector("meta[name=description]"))
+      add("meta", { name: "description", content: "BSL La Puissance Zénith, Baname : énergie solaire, électronique, télécommunications et commerce général. Catalogue, promotions et nouveautés." });
+    add("meta", { name: "mobile-web-app-capable", content: "yes" });
+    add("meta", { name: "apple-mobile-web-app-capable", content: "yes" });
+    add("meta", { name: "apple-mobile-web-app-title", content: "BSL Zénith" });
+  }
+  injectHead();
+  if ("serviceWorker" in navigator)
+    addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 
   /* ---------- Fenêtre inscription / connexion ---------- */
   function buildModal() {

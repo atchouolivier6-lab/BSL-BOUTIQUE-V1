@@ -76,3 +76,7 @@ footer.site a.soc:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
 /* ===== Compteurs sur les cartes ===== */
 .stats{display:flex;gap:12px;font-size:12px;color:var(--mu);margin-top:3px}
 .flinks{margin-top:8px}
+
+.installrow{margin-top:12px}
+.installrow .muted{font-size:13px}
+.installrow [hidden]{display:none}

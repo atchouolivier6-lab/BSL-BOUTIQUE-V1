@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin
+Disallow: /profil.html
+Disallow: /reinitialiser.html
+
+Sitemap: https://VOTRE-ADRESSE/sitemap.xml

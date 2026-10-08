@@ -3,4 +3,4 @@ Disallow: /admin
 Disallow: /profil.html
 Disallow: /reinitialiser.html
 
-Sitemap: https://VOTRE-ADRESSE/sitemap.xml
+Sitemap: https://atchouolivier6-lab.github.io/BSL-BOUTIQUE-V1/sitemap.xml

@@ -14,7 +14,7 @@
       BSL.openAuth("signup", "Inscrivez-vous gratuitement pour voir les détails de ce produit.");
     };
     window.PROD = { gate: open };
-    root.innerHTML = `<div class="card gate"><h2>🔒 Réservé aux membres</h2>
+    root.innerHTML = `<div class="card gate"><h2>Réservé aux membres</h2>
       <p class="muted">Créez un compte gratuit pour voir les photos, la description, la disponibilité et commander sur WhatsApp.</p>
       <div class="row"><button class="btn" onclick="PROD.gate()">Créer mon compte</button>
       <button class="btn ghost" onclick="BSL.pendingUrl=location.href;BSL.openAuth('login')">J'ai déjà un compte</button></div></div>`;
@@ -60,13 +60,13 @@
     const price = p.on_promo
       ? `<span class="big">${fmt(p.final_price)}</span> <span class="old">${fmt(p.price)}</span><span class="save">-${save}%</span>${until}`
       : `<span class="big">${fmt(p.final_price)}</span>`;
-    const waLabel = p.stock === "out" ? "💬 Me prévenir sur WhatsApp" : "💬 Commander sur WhatsApp";
+    const waLabel = p.stock === "out" ? "Me prévenir sur WhatsApp" : "Commander sur WhatsApp";
 
     root.innerHTML = `
       <a class="back" href="index.html#produits">← Retour aux produits</a>
       <div class="pgrid">
         <div>
-          <div class="gmain" id="gmain">${IMGS.length ? `<img id="gimg" src="${esc(IMGS[0])}" alt="${esc(p.name)}">` : "📦"}
+          <div class="gmain" id="gmain">${IMGS.length ? `<img id="gimg" src="${esc(IMGS[0])}" alt="${esc(p.name)}">` : BSL.noimg}
             ${p.on_promo ? '<span class="badge">PROMO</span>' : ""}${p.is_new ? '<span class="badge new">NOUVEAU</span>' : ""}</div>
           ${IMGS.length > 1 ? `<div class="thumbs">${IMGS.map((u, k) =>
             `<button class="th ${k ? "" : "on"}" onclick="PROD.show(${k})" aria-label="Photo ${k + 1}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}
@@ -80,6 +80,7 @@
           <div class="stock ${sc}"><span class="dot"></span>${st}</div>
           ${p.description ? `<div class="desc">${esc(p.description).replace(/\n/g, "<br>")}</div>` : ""}
           <div class="actions">
+            <button class="btn" id="cartBtn" type="button" style="flex:1 1 200px;padding:14px 18px;font-size:17px">Ajouter au panier</button>
             <a class="btn wa" id="waBtn" href="${waUrl(p)}" target="_blank" rel="noopener">${waLabel}</a>
           </div>
         </div>
@@ -88,6 +89,10 @@
 
     paint();
     $("#waBtn").addEventListener("click", () => logEvent("whatsapp_click"));
+    const cb = $("#cartBtn");
+    cb.onclick = async () => { const q = await BSL.addToCart(p.id); if (q) cb.textContent = "Dans le panier (" + q + ")"; };
+    sb.from("cart_items").select("quantity").eq("user_id", BSL.user.id).eq("product_id", p.id).maybeSingle()
+      .then(r => { if (r.data) cb.textContent = "Dans le panier (" + r.data.quantity + ")"; });
     // Balayage tactile de la galerie
     const g = $("#gmain");
     let x0 = null;
@@ -103,7 +108,7 @@
   function waUrl(p) {
     const s = BSL.shop;
     const name = [BSL.profile && BSL.profile.first_name, BSL.profile && BSL.profile.last_name].filter(Boolean).join(" ");
-    const msg = `Bonjour BSL Zénith 👋\nJe suis intéressé(e) par : ${p.name} — ${fmt(p.final_price)}\n${location.href}` + (name ? `\nNom : ${name}` : "");
+    const msg = `Bonjour BSL Zénith\nJe suis intéressé(e) par : ${p.name} — ${fmt(p.final_price)}\n${location.href}` + (name ? `\nNom : ${name}` : "");
     return s.whatsapp_number
       ? `https://wa.me/${encodeURIComponent(s.whatsapp_number)}?text=${encodeURIComponent(msg)}`
       : (s.whatsapp_link || "#");
@@ -115,11 +120,11 @@
     if (!el || !S) return;
     el.innerHTML = `
       <button class="sbtn ${S.like.on ? "on" : ""}" onclick="PROD.toggle('like')" aria-pressed="${S.like.on}">
-        <span class="ic">${S.like.on ? "❤️" : "🤍"}</span> J'aime <b>${BSL.n(S.like.n)}</b></button>
+        ${S.like.on ? "Aimé" : "J'aime"} <b>${BSL.n(S.like.n)}</b></button>
       <button class="sbtn ${S.fav.on ? "on" : ""}" onclick="PROD.toggle('fav')" aria-pressed="${S.fav.on}">
-        <span class="ic">${S.fav.on ? "⭐" : "☆"}</span> Favori <b>${BSL.n(S.fav.n)}</b></button>
-      <button class="sbtn" onclick="PROD.share()"><span class="ic">🔗</span> Partager <b>${BSL.n(S.share.n)}</b></button>
-      <span class="views">👁 <b>${BSL.n(S.view.n)}</b> vue${S.view.n > 1 ? "s" : ""}</span>`;
+        ${S.fav.on ? "Enregistré" : "Favori"} <b>${BSL.n(S.fav.n)}</b></button>
+      <button class="sbtn" onclick="PROD.share()">Partager <b>${BSL.n(S.share.n)}</b></button>
+      <span class="views"><b>${BSL.n(S.view.n)}</b> vue${S.view.n > 1 ? "s" : ""}</span>`;
   }
 
   async function toggle(k) {
@@ -154,7 +159,7 @@
     if (!data || !data.length) return;
     $("#rel").innerHTML = `<h2>Dans la même catégorie</h2><div class="grid">${data.map(r => `
       <a class="pcard" href="produit.html?id=${encodeURIComponent(r.id)}">
-        <div class="im">${r.cover_url ? `<img src="${esc(r.cover_url)}" alt="${esc(r.name)}" loading="lazy">` : "📦"}
+        <div class="im">${r.cover_url ? `<img src="${esc(r.cover_url)}" alt="${esc(r.name)}" loading="lazy">` : BSL.noimg}
           ${r.on_promo ? '<span class="badge">PROMO</span>' : ""}${r.is_new ? '<span class="badge new">NOUVEAU</span>' : ""}</div>
         <div class="b"><span class="n">${esc(r.name)}</span>
           <div><span class="price">${fmt(r.final_price)}</span>${r.on_promo ? `<span class="old">${fmt(r.price)}</span>` : ""}</div></div>

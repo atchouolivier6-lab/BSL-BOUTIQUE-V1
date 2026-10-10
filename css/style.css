@@ -60,7 +60,6 @@ label input,label select,label textarea{margin-top:4px;font-weight:400}
 .avatar{width:36px;height:36px;border-radius:50%;background:var(--pr);color:var(--on-pr);display:grid;place-items:center;font-weight:800;font-size:14px;overflow:hidden;flex:0 0 auto}
 .avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .avatar.lg{width:104px;height:104px;font-size:38px}
-@media(max-width:520px){.logged .brand .name{display:none}}
 
 /* ===== Menu a trois traits (profil, administration, deconnexion) ===== */
 .menubtn{display:inline-grid;place-items:center;width:40px;height:36px;padding:0;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx);cursor:pointer;flex:0 0 auto}
@@ -76,4 +75,10 @@ label input,label select,label textarea{margin-top:4px;font-weight:400}
 .menupanel a,.menupanel .mi{display:flex;width:100%;align-items:center;padding:12px;border-radius:10px;border:0;background:none;color:var(--tx);font:inherit;font-weight:600;text-align:left;cursor:pointer;text-decoration:none}
 .menupanel a:hover,.menupanel .mi:hover{background:var(--bg2)}
 .menupanel .out{color:var(--ko)}
-@media(max-width:520px){.topbar .brand .name{display:none}}
+
+/* ===== Nom de la boutique dans l'en-tete : toujours visible, se raccourcit si besoin ===== */
+.topbar .brand{min-width:0;flex:0 1 auto}
+.topbar .brand .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:560px){.topbar .container{gap:8px}}
+@media(max-width:440px){body:not(.logged) .topbar .brand .name{display:none}}
+.topbar .brand img,.topbar .brand .mono{flex:0 0 auto}

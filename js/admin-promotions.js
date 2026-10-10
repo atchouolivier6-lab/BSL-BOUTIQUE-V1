@@ -32,7 +32,7 @@
     draw();
   }
 
-  const state = p => p.on_promo ? "active" : (p.promo_price ? "expired" : "none");
+  function state(p) { return p.on_promo ? "active" : (p.promo_price ? "expired" : "none"); }
 
   function draw() {
     const cnt = { active: 0, expired: 0, none: 0, all: P.length };

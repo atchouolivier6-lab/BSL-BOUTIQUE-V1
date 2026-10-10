@@ -38,12 +38,14 @@
       `<header class="topbar"><div class="container">
         <a class="brand" href="index.html">${logo}<span class="name">BSL Zénith</span></a>
         <span class="spacer"></span>
+        <a class="cartbtn" href="panier.html" aria-label="Mon panier" title="Mon panier"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.2L21 7H6"/></svg><span class="cartbadge" id="cartCount" hidden>0</span></a>
         <button class="btn ghost sm" data-theme-btn aria-label="Changer le thème">Sombre</button>
         <span id="authzone"></span>
       </div>
       <nav class="mainnav"><div class="container" id="navzone"></div></nav></header>`;
     renderAuthZone();
     BSLTheme.init();
+    B.setCartCount(B.cartCount);
   }
   function renderNav() {
     const z = $("#navzone");
@@ -222,14 +224,17 @@
     if (m) m.hidden = true;
     document.body.style.overflow = "";
     B.pendingUrl = null;
+    B.pendingAdd = null;
   };
   async function afterAuth() {
-    const go = B.pendingUrl;
+    const go = B.pendingUrl, add = B.pendingAdd;
     B.closeAuth();
     await refresh();
     renderAuthZone();
+    await loadCartCount();
     document.dispatchEvent(new Event("bsl-auth"));
     if (go) location.href = go;
+    else if (add) B.addToCart(add);
   }
   B.signup = async function (e) {
     e.preventDefault();
@@ -293,12 +298,51 @@
     const price = p.on_promo
       ? `<span class="price">${B.fmt(p.final_price)}</span><span class="old">${B.fmt(old)}</span>`
       : `<span class="price">${B.fmt(p.final_price)}</span>`;
-    return `<button class="pcard" onclick="BSL.openProduct('${esc(p.id)}')">
+    return `<div class="pitem"><button class="pcard" onclick="BSL.openProduct('${esc(p.id)}')">
       <div class="im">${img}${p.on_promo ? '<span class="badge">PROMO</span>' : ""}${p.is_new ? '<span class="badge new">NOUVEAU</span>' : ""}</div>
       <div class="b"><span class="n">${esc(p.name)}</span><span class="c">${esc(p.category_name || "")}</span>
       <div>${price}</div>
       <div class="stats"><span>${B.n(p.likes_count)} j'aime</span><span>${B.n(p.views_count)} vues</span></div>
-      ${B.user ? "" : '<span class="lock">Détails après inscription</span>'}</div></button>`;
+      ${B.user ? "" : '<span class="lock">Détails après inscription</span>'}</div></button>
+      <button class="btn ghost sm addcart" type="button" onclick="BSL.addToCart('${esc(p.id)}', this)">Ajouter au panier</button></div>`;
+  };
+
+  /* ---------- Panier ---------- */
+  B.cartCount = 0;
+  B.setCartCount = function (n) {
+    B.cartCount = n || 0;
+    const b = $("#cartCount");
+    if (b) { b.textContent = B.cartCount > 99 ? "99+" : B.cartCount; b.hidden = !B.cartCount; }
+  };
+  async function loadCartCount() {
+    if (!B.user) return B.setCartCount(0);
+    const r = await sb.from("cart_items").select("product_id", { count: "exact", head: true }).eq("user_id", B.user.id);
+    B.setCartCount(r.count || 0);
+  }
+  B.toast = function (msg, withLink) {
+    let t = $("#pubtoast");
+    if (!t) { t = document.createElement("div"); t.id = "pubtoast"; t.className = "pubtoast"; document.body.appendChild(t); }
+    t.innerHTML = `<span>${esc(msg)}</span>${withLink ? '<a href="panier.html">Voir le panier</a>' : ""}`;
+    t.classList.add("show");
+    clearTimeout(B._tt); B._tt = setTimeout(() => t.classList.remove("show"), 3500);
+  };
+  // Ajoute 1 exemplaire ; retourne la quantité dans le panier (ou null si impossible)
+  B.addToCart = async function (id, btn) {
+    if (!B.user) {
+      B.pendingAdd = id;
+      B.openAuth("signup", "Inscrivez-vous gratuitement pour utiliser le panier.");
+      return null;
+    }
+    if (btn) btn.disabled = true;
+    const cur = await sb.from("cart_items").select("quantity").eq("user_id", B.user.id).eq("product_id", id).maybeSingle();
+    const q = Math.min(99, (cur.data ? cur.data.quantity : 0) + 1);
+    const { error } = await sb.from("cart_items").upsert({ user_id: B.user.id, product_id: id, quantity: q }, { onConflict: "user_id,product_id" });
+    if (btn) btn.disabled = false;
+    if (error) { B.toast(/plein/i.test(error.message) ? "Panier plein (50 articles maximum)." : "Ajout impossible, réessayez."); return null; }
+    if (!cur.data) B.setCartCount(B.cartCount + 1);
+    B.toast(cur.data ? `Quantité mise à jour : ${q}` : "Ajouté au panier", true);
+    if (btn) { const old = btn.textContent; btn.textContent = q > 1 ? `Dans le panier (${q})` : "Ajouté"; setTimeout(() => (btn.textContent = old), 2000); }
+    return q;
   };
 
   /* ---------- Démarrage ---------- */
@@ -307,5 +351,6 @@
     await Promise.all([loadShop(), refresh()]);
     renderHeader();
     renderFooter();
+    loadCartCount();
   })();
 })();

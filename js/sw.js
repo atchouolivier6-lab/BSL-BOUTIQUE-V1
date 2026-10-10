@@ -4,7 +4,11 @@ const CACHE = "bsl-v1";
 const PRECACHE = ["offline.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => Promise.all(PRECACHE.map(u => c.add(u).catch(() => {}))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", e => {
@@ -19,7 +23,7 @@ self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
-  if (url.origin !== location.origin) return;           // Supabase, CDN : on laisse passer tel quel
+  if (url.origin !== location.origin) return;
 
   e.respondWith(
     fetch(req)

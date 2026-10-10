@@ -25,7 +25,7 @@
   draw();
 
   function norm(s) { return String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
-  const fullName = m => ((m.first_name || "") + " " + (m.last_name || "")).trim();
+  function fullName(m) { return ((m.first_name || "") + " " + (m.last_name || "")).trim(); }
 
   function draw() {
     const counts = { all: ALL.length, admin: 0, staff: 0, member: 0 };

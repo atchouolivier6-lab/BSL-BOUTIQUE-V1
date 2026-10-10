@@ -119,14 +119,29 @@
       <header class="topbar"><div class="container wide">
         <a class="brand" href="admin.html">${logoHtml(A.cfg.logo_shop, "lg")}<span class="name">Administration</span></a>
         <span class="spacer"></span>
-        <a class="avatar" href="profil.html" title="Mon profil">${A.profile.avatar_url ? `<img src="${esc(A.profile.avatar_url)}" alt="">` : esc((name[0] || "?").toUpperCase())}</a>
-        <span class="who muted">${esc(name)} · ${A.isAdmin ? "Admin" : "Employé"}</span>
         <button class="btn ghost sm" data-theme-btn aria-label="Changer le thème">Sombre</button>
-        <a class="btn ghost sm" href="index.html">Site</a>
-        <button class="btn ghost sm" id="alogout">Déconnexion</button>
+        <button class="menubtn" id="menuBtn" type="button" aria-label="Menu" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       </div></header>
+      <div class="menupanel" id="userMenu" hidden>
+        <div class="mhead">
+          <span class="avatar">${A.profile.avatar_url ? `<img src="${esc(A.profile.avatar_url)}" alt="">` : esc((name[0] || "?").toUpperCase())}</span>
+          <div style="min-width:0"><div class="nm">${esc(name)}</div><span class="mrole ${A.isAdmin ? "admin" : "staff"}">${A.isAdmin ? "Administrateur" : "Employé"}</span>
+          <small>${esc(A.user.email || "")}</small></div>
+        </div>
+        <a href="profil.html">Mon profil</a>
+        <a href="index.html">Voir le site</a>
+        <button class="mi out" type="button" id="alogout">Déconnexion</button>
+      </div>
       <div class="admwrap"><nav class="admnav">${links}</nav><main class="admmain" id="acontent"></main></div>`;
     BSLTheme.init();
+    const mb = $("#menuBtn"), mp = $("#userMenu");
+    const setMenu = open => {
+      if (open) mp.style.top = (mb.getBoundingClientRect().bottom + 8) + "px";
+      mp.hidden = !open; mb.setAttribute("aria-expanded", String(open));
+    };
+    mb.onclick = e => { e.stopPropagation(); setMenu(mp.hidden); };
+    document.addEventListener("click", e => { if (!mp.hidden && !mp.contains(e.target)) setMenu(false); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
     $("#alogout").onclick = async () => { await sb.auth.signOut(); location.href = "admin.html"; };
 
     // Pastille « messages non lus »

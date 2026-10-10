@@ -64,24 +64,52 @@
     z.innerHTML = items.map(([pg, flt, label]) =>
       `<a href="${pg}${flt ? "?f=" + flt : ""}" class="${file === pg && f === flt ? "on" : ""}">${label}</a>`).join("");
   }
+  const ROLE_LABEL = { admin: "Administrateur", staff: "Employé", member: "Membre" };
+  const MENU_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+
   function renderAuthZone() {
     renderNav();
     const z = $("#authzone");
     if (!z) return;
     document.body.classList.toggle("logged", !!B.user);
-    if (!B.user) {
-      z.innerHTML = `<button class="btn sm" onclick="BSL.openAuth('signup')">S'inscrire</button>
-                     <button class="btn ghost sm" onclick="BSL.openAuth('login')">Connexion</button>`;
+    z.innerHTML = (B.user ? "" : `<button class="btn sm" type="button" onclick="BSL.openAuth('signup')">S'inscrire</button>`) +
+      `<button class="menubtn" id="menuBtn" type="button" aria-label="Menu" aria-haspopup="true" aria-expanded="false">${MENU_ICON}</button>`;
+    $("#menuBtn").onclick = e => { e.stopPropagation(); toggleMenu(); };
+    buildMenu();
+  }
+
+  // Menu déroulant : profil, rôle, administration, déconnexion (ou inscription / connexion)
+  function buildMenu() {
+    let p = $("#userMenu");
+    if (!p) { p = document.createElement("div"); p.id = "userMenu"; p.className = "menupanel"; p.hidden = true; document.body.appendChild(p); }
+    if (B.user) {
+      const pr = B.profile || {};
+      const full = [pr.first_name, pr.last_name].filter(Boolean).join(" ") || B.user.email || "";
+      const ini = ((pr.first_name || B.user.email || "?")[0] || "?").toUpperCase();
+      const role = pr.role || "member";
+      p.innerHTML = `<div class="mhead">
+          <span class="avatar">${pr.avatar_url ? `<img src="${esc(pr.avatar_url)}" alt="">` : esc(ini)}</span>
+          <div style="min-width:0"><div class="nm">${esc(full)}</div><span class="mrole ${esc(role)}">${ROLE_LABEL[role] || "Membre"}</span>
+          <small>${esc(B.user.email || "")}</small></div></div>
+        <a href="profil.html">Mon profil</a>
+        ${B.isStaff ? '<a href="admin.html">Administration</a>' : ""}
+        <button class="mi out" type="button" onclick="BSL.logout()">Déconnexion</button>`;
     } else {
-      const name = B.profile && B.profile.first_name ? B.profile.first_name : "";
-      const ini = ((name || (B.user.email || "?"))[0] || "?").toUpperCase();
-      const av = `<a class="avatar" href="profil.html" aria-label="Mon profil" title="Mon profil">${
-        B.profile && B.profile.avatar_url ? `<img src="${esc(B.profile.avatar_url)}" alt="">` : esc(ini)}</a>`;
-      z.innerHTML = `<span class="hi muted">Bonjour ${esc(name)}</span>${av}
-        ${B.isStaff ? '<a class="btn ghost sm" href="admin.html">Admin</a>' : ""}
-        <button class="btn ghost sm" onclick="BSL.logout()">Déconnexion</button>`;
+      p.innerHTML = `<button class="mi" type="button" onclick="BSL.closeMenu();BSL.openAuth('signup')">Créer un compte</button>
+        <button class="mi" type="button" onclick="BSL.closeMenu();BSL.openAuth('login')">Connexion</button>`;
     }
   }
+  function toggleMenu(force) {
+    const p = $("#userMenu"), b = $("#menuBtn");
+    if (!p || !b) return;
+    const open = force !== undefined ? force : p.hidden;
+    if (open) p.style.top = (b.getBoundingClientRect().bottom + 8) + "px";
+    p.hidden = !open;
+    b.setAttribute("aria-expanded", String(open));
+  }
+  B.closeMenu = () => toggleMenu(false);
+  document.addEventListener("click", e => { const p = $("#userMenu"); if (p && !p.hidden && !p.contains(e.target)) toggleMenu(false); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") toggleMenu(false); });
   const TT = "M15.2 8v11.2a3.4 3.4 0 1 1-3.4-3.4M15.2 8c.4 2.6 2 4.2 4.6 4.5";
   const ICONS = {
     facebook: '<svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#1877F2"/><path d="M17.5 26v-8.2h2.8l.5-3.3h-3.3v-2.1c0-.9.4-1.7 1.8-1.7h1.6V7.9c-.3 0-1.3-.2-2.4-.2-2.5 0-4.1 1.5-4.1 4.2v2.6h-2.7v3.3h2.7V26z" fill="#fff"/></svg>',
@@ -344,7 +372,7 @@
     if (btn) { const old = btn.textContent; btn.textContent = q > 1 ? `Dans le panier (${q})` : "Ajouté"; setTimeout(() => (btn.textContent = old), 2000); }
     return q;
   };
-
+   
   /* ---------- Démarrage ---------- */
   buildModal();
   B.ready = (async () => {
@@ -354,3 +382,4 @@
     loadCartCount();
   })();
 })();
+ 

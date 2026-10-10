@@ -45,7 +45,7 @@
     draw();
   }
 
-  const norm = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  function norm(s) { return String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
 
   function draw() {
     const q = norm($("#pq").value).trim(), cat = $("#pcat").value, st = $("#pst").value;

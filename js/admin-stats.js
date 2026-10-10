@@ -20,10 +20,11 @@
   async function load() {
     drawPeriod();
     $("#sbody").innerHTML = '<p class="muted">Chargement...</p>';
-    const [d, p, s] = await Promise.all([
+    const [d, p, s, cr] = await Promise.all([
       sb.rpc("stats_daily", { days }),
       sb.rpc("stats_top_products", { days, lim: 10 }),
       sb.rpc("stats_top_searches", { days, lim: 15 }),
+      sb.rpc("stats_top_carts", { lim: 10 }),
     ]);
     const err = d.error || p.error || s.error;
     if (err) {
@@ -38,6 +39,8 @@
     const kpi = (v, l) => `<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`;
     const top = p.data || [], maxV = Math.max(1, ...top.map(x => +x.views));
     const terms = s.data || [];
+    const carts = cr.error ? null : (cr.data || []);
+    const maxC = Math.max(1, ...(carts || []).map(x => +x.carts));
 
     $("#sbody").innerHTML = `
       <div class="kpis">
@@ -61,6 +64,14 @@
             <div class="grow"><div class="t">${esc(x.product_name)}</div><div class="bar"><i style="width:${(+x.views / maxV) * 100}%"></i></div></div>
             <small>${n(x.views)} vues<br>${n(x.whatsapp)} WhatsApp</small></div>`).join("")
             : '<div class="muted-empty">Aucune donnée sur cette période.</div>'}
+        </div>
+        <div class="panel"><h2>Produits dans les paniers</h2>
+          ${carts === null ? '<div class="muted-empty">Exécutez step11.sql pour activer cette statistique.</div>'
+            : carts.length ? carts.map((x, i) => `<div class="tcell"><span class="rk">${i + 1}</span>
+              <div class="grow"><div class="t">${esc(x.product_name)}</div><div class="bar"><i style="width:${(+x.carts / maxC) * 100}%"></i></div></div>
+              <small>${n(x.carts)} panier${+x.carts > 1 ? "s" : ""}<br>${n(x.units)} unité${+x.units > 1 ? "s" : ""}</small></div>`).join("")
+            : '<div class="muted-empty">Aucun panier en cours.</div>'}
+          ${carts && carts.length ? '<p class="smallhint">Ces clients ont ajouté ces produits au panier : ce sont vos meilleures occasions de discussion sur WhatsApp.</p>' : ""}
         </div>
         <div class="panel"><h2>Ce que cherchent les membres</h2>
           ${terms.length ? terms.map((x, i) => `<div class="tcell"><span class="rk">${i + 1}</span>

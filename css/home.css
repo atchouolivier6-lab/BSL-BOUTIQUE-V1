@@ -80,3 +80,14 @@ footer.site a.soc:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
 .installrow{margin-top:12px}
 .installrow .muted{font-size:13px}
 .installrow [hidden]{display:none}
+
+/* ===== Panier : icone, pastille, bouton, message ===== */
+.cartbtn{position:relative;display:inline-grid;place-items:center;width:40px;height:36px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx);flex:0 0 auto}
+.cartbadge{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--ko);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;line-height:1}
+.cartbadge[hidden]{display:none}
+.pitem{display:flex;flex-direction:column;gap:8px}
+.pitem .pcard{flex:1}
+.addcart{width:100%}
+.pubtoast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--tx);color:var(--bg);padding:11px 18px;border-radius:99px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:70;display:flex;gap:12px;align-items:center;max-width:92vw}
+.pubtoast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.pubtoast a{color:var(--pr);text-decoration:underline;white-space:nowrap}

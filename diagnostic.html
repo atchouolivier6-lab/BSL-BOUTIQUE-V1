@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Diagnostic de l'installation - BSL Zénith</title>
+<meta name="theme-color" content="#14213d">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/home.css">
+<style>
+.dwrap{max-width:720px;margin:0 auto;padding:22px 0 10px}
+.dwrap h1{margin:0 0 6px;font-size:24px}
+.drow{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;margin:8px 0;border:1px solid var(--bd);border-radius:12px;background:var(--bg2)}
+.drow .tag{flex:0 0 auto;font-size:12px;font-weight:800;padding:3px 10px;border-radius:99px;color:#fff;background:var(--ok);margin-top:2px}
+.drow.bad .tag{background:var(--ko)}
+.drow.info .tag{background:var(--mu)}
+.drow b{display:block}
+.drow small{color:var(--mu);word-break:break-word}
+.dbtns{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+</style>
+</head>
+<body>
+<div id="header"></div>
+<main class="container">
+  <div class="dwrap">
+    <h1>Diagnostic de l'installation</h1>
+    <p class="muted">Cette page vérifie un à un tous les éléments nécessaires pour installer le site comme une application. Envoyez-moi une capture de l'écran complet.</p>
+    <div id="diag"><p class="muted">Analyse en cours...</p></div>
+    <div class="dbtns">
+      <button class="btn" id="bInstall" type="button">Essayer l'installation</button>
+      <button class="btn ghost" id="bReset" type="button">Forcer la mise à jour du site</button>
+    </div>
+    <p class="muted" id="dnote" style="font-size:14px"></p>
+  </div>
+</main>
+<div id="footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/diag.js"></script>
+</body>
+  </html>

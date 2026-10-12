@@ -1,12 +1,12 @@
 // Service worker BSL Zénith : réseau d'abord, copie locale seulement si hors connexion.
 // Ne touche JAMAIS aux requêtes vers Supabase ou les CDN (autre origine) : aucune donnée privée n'est mise en cache.
-const CACHE = "bsl-v1";
+const CACHE = "bsl-v2";
 const PRECACHE = ["offline.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => Promise.all(PRECACHE.map(u => c.add(u).catch(() => {}))))
+      .then(c => Promise.all(PRECACHE.map(u => c.add(u).catch(() => {}))))   // un fichier manquant ne bloque plus l'installation
       .then(() => self.skipWaiting())
   );
 });
@@ -23,10 +23,10 @@ self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
-  if (url.origin !== location.origin) return;
+  if (url.origin !== location.origin) return;           // Supabase, CDN : on laisse passer tel quel
 
   e.respondWith(
-    fetch(req)
+    (req.mode === "navigate" ? fetch(req) : fetch(req.url, { cache: "no-cache" }))   // revérifie auprès du serveur : pas d'ancienne version
       .then(res => {
         if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
         return res;

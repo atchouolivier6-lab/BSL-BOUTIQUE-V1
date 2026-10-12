@@ -7,7 +7,7 @@
 | `index.html`, `catalogue.html`, `produit.html`, `apropos.html`, `contact.html`, `localisation.html`, `faq.html`, `profil.html`, `reinitialiser.html` | Pages publiques et espace membre |
 | `admin.html`, `admin-*.html` | Espace d'administration (employés et admin) |
 | `js/config.js` | Adresse et clé publique de Supabase |
-| `js/layout.js` | En-tête, menu, pied de page, inscription et connexion (toutes les pages) |
+| `js/layout.js` et `js/layout-app.js` | En-tête, menu, pied de page (partie 1) ; inscription, connexion, panier, cartes produit (partie 2). Les deux fichiers vont ensemble : la page ne charge que `layout.js`, qui charge `layout-app.js` tout seul |
 | `js/admin.js` | Cadre commun de l'administration |
 | `css/` | Styles (`style.css` = thème clair et sombre) |
 | `icons/`, `manifest.webmanifest`, `sw.js`, `offline.html` | Application installable |
@@ -36,7 +36,7 @@ Le service d'envoi gratuit intégré à Supabase n'écrit en pratique qu'à votr
 1. Créez un compte gratuit sur **Brevo** et validez votre adresse d'expéditeur.
 2. Dans Brevo, ouvrez la page **SMTP et API** et créez une **clé SMTP**.
 3. Dans Supabase : **Authentication > Emails > SMTP Settings**, activez « Custom SMTP » et renseignez : serveur `smtp-relay.brevo.com`, port `587`, identifiant et mot de passe (clé SMTP) donnés par Brevo, adresse et nom d'expéditeur (par exemple « BSL La Puissance Zénith »). Vérifiez ces valeurs dans votre compte Brevo.
-4. Dans **Authentication > URL Configuration**, ajoutez l'adresse de votre site dans **Site URL** et `https://VOTRE-ADRESSE/**` dans **Redirect URLs**.
+4. Dans **Authentication > URL Configuration**, ajoutez l'adresse de votre site dans **Site URL** et `https://atchouolivier6-lab.github.io/BSL-BOUTIQUE-V1/**` dans **Redirect URLs**.
 5. Dans **Authentication > Emails > Templates > Reset Password**, vous pouvez coller ce texte en français.
 
 Objet : `Réinitialisation de votre mot de passe - BSL Zénith`

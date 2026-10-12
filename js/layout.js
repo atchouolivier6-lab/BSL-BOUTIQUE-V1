@@ -1,8 +1,10 @@
-// Partagé par toutes les pages. Charge APRÈS config.js et supabase.js
+// PARTIE 1/2 - Partagé par toutes les pages. Charge APRÈS config.js et supabase.js
 // Attend dans la page : <div id="header"></div> ... <div id="footer"></div>
+// Charge automatiquement la partie 2 : js/layout-app.js (ne pas l'ajouter dans les pages)
 (function () {
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const VERSION = "4 - 12 oct. 2026";
   const B = (window.BSL = {
     esc,
     fmt: n => Number(n).toLocaleString("fr-FR") + " FCFA",
@@ -139,6 +141,7 @@
       <div class="flinks"><a href="apropos.html">À propos</a> · <a href="contact.html">Contact</a> · <a href="localisation.html">Localisation</a> · <a href="faq.html">FAQ</a></div>
       ${B.socials()}
       <div class="installrow"><button class="btn ghost sm" id="pwaBtn" type="button" onclick="BSL.install()">Installer l'application</button></div>
+      <p class="muted" style="font-size:12px;margin:10px 0 0">Version ${VERSION}</p>
     </div></footer>`;
     updateInstallUI();
   }
@@ -217,6 +220,35 @@
   injectHead();
   if ("serviceWorker" in navigator)
     addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+
+  // Éléments partagés avec la partie 2
+  B.refresh = refresh;
+  B.partB = new Promise(res => (B._partBDone = res));
+
+  /* ---------- Démarrage ---------- */
+  B.ready = (async () => {
+    // On attend la partie 2 (4 s maximum) puis les données de la boutique et la session
+    await Promise.race([B.partB, new Promise(r => setTimeout(r, 4000))]);
+    if (!B.setCartCount) {
+      document.body.insertAdjacentHTML("afterbegin",
+        '<div style="background:#dc2626;color:#fff;padding:10px 14px;font:14px system-ui">Fichier manquant : js/layout-app.js. Ajoutez-le dans GitHub.</div>');
+      return;
+    }
+    await Promise.all([loadShop(), refresh()]);
+    renderHeader();
+    renderFooter();
+    B.loadCartCount();
+  })();
+})();
+
+// Charge la partie 2 immédiatement, avant les scripts suivants de la page
+document.write('<script src="js/layout-app.js"><\/script>');
+// PARTIE 2/2 de layout.js : fenêtre d'inscription / connexion, cartes produit, panier.
+// Chargé automatiquement par js/layout.js : ne pas l'ajouter dans les pages.
+(function () {
+  const $ = s => document.querySelector(s);
+  const B = window.BSL;
+  const esc = B.esc;
 
   /* ---------- Fenêtre inscription / connexion ---------- */
   function buildModal() {
@@ -298,8 +330,8 @@
   async function afterAuth() {
     const go = B.pendingUrl, add = B.pendingAdd;
     B.closeAuth();
-    await refresh();
-    renderAuthZone();
+    await B.refresh();
+    B.renderAuthZone();
     await loadCartCount();
     document.dispatchEvent(new Event("bsl-auth"));
     if (go) location.href = go;
@@ -345,7 +377,7 @@
     B.openAuth("login", "Si cet e-mail est inscrit, un lien de réinitialisation vient d'être envoyé. Pensez à vérifier vos courriers indésirables.");
   };
   B.logout = async function () { await sb.auth.signOut(); location.href = "index.html"; };
- 
+
   // Clic sur un produit : membre -> fiche ; visiteur -> invitation à s'inscrire
   B.openProduct = function (id) {
     const url = "produit.html?id=" + encodeURIComponent(id);
@@ -353,7 +385,7 @@
     B.pendingUrl = url;
     B.openAuth("signup", "Inscrivez-vous gratuitement pour voir les détails de ce produit.");
   };
- 
+
   B.noimg = '<svg viewBox="0 0 48 48" width="40%" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color:var(--mu);opacity:.55"><rect x="6" y="9" width="36" height="30" rx="4"/><circle cx="17" cy="20" r="3.5"/><path d="M6 34l10-9 8 7 6-5 12 10"/></svg>';
   // Nombre compact : 1250 -> 1,3 k
   B.n = n => {
@@ -361,7 +393,7 @@
     return n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".", ",").replace(",0", "") + " k" : String(n);
   };
   // Carte produit commune (accueil, catalogue)
- B.card = function (p) {
+  B.card = function (p) {
     const old = p.old_price != null ? p.old_price : p.price;
     const img = p.cover_url ? `<img src="${esc(p.cover_url)}" alt="${esc(p.name)}" loading="lazy">` : B.noimg;
     const price = p.on_promo
@@ -375,7 +407,7 @@
       ${B.user ? "" : '<span class="lock">Détails après inscription</span>'}</div></button>
       <button class="btn ghost sm addcart" type="button" onclick="BSL.addToCart('${esc(p.id)}', this)">Ajouter au panier</button></div>`;
   };
- 
+
   /* ---------- Panier ---------- */
   B.cartCount = 0;
   B.setCartCount = function (n) {
@@ -396,7 +428,7 @@
     clearTimeout(B._tt); B._tt = setTimeout(() => t.classList.remove("show"), 3500);
   };
   // Ajoute 1 exemplaire ; retourne la quantité dans le panier (ou null si impossible)
- B.addToCart = async function (id, btn) {
+  B.addToCart = async function (id, btn) {
     if (!B.user) {
       B.pendingAdd = id;
       B.openAuth("signup", "Inscrivez-vous gratuitement pour utiliser le panier.");
@@ -408,18 +440,13 @@
     const { error } = await sb.from("cart_items").upsert({ user_id: B.user.id, product_id: id, quantity: q }, { onConflict: "user_id,product_id" });
     if (btn) btn.disabled = false;
     if (error) { B.toast(/plein/i.test(error.message) ? "Panier plein (50 articles maximum)." : "Ajout impossible, réessayez."); return null; }
-   if (!cur.data) B.setCartCount(B.cartCount + 1);
+    if (!cur.data) B.setCartCount(B.cartCount + 1);
     B.toast(cur.data ? `Quantité mise à jour : ${q}` : "Ajouté au panier", true);
     if (btn) { const old = btn.textContent; btn.textContent = q > 1 ? `Dans le panier (${q})` : "Ajouté"; setTimeout(() => (btn.textContent = old), 2000); }
     return q;
   };
- 
-  /* ---------- Démarrage ---------- */
+  B.loadCartCount = loadCartCount;
+
   buildModal();
-  B.ready = (async () => {
-    await Promise.all([loadShop(), refresh()]);
-    renderHeader();
-    renderFooter();
-    loadCartCount();
-  })();
+  B._partBDone();      // prévient la partie 1 que tout est prêt
 })();

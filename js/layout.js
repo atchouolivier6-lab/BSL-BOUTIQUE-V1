@@ -93,11 +93,14 @@
           <small>${esc(B.user.email || "")}</small></div></div>
         <a href="profil.html">Mon profil</a>
         ${B.isStaff ? '<a href="admin.html">Administration</a>' : ""}
+        <button class="mi" id="menuInstall" type="button" onclick="BSL.closeMenu();BSL.install()">Installer l'application</button>
         <button class="mi out" type="button" onclick="BSL.logout()">Déconnexion</button>`;
     } else {
       p.innerHTML = `<button class="mi" type="button" onclick="BSL.closeMenu();BSL.openAuth('signup')">Créer un compte</button>
-        <button class="mi" type="button" onclick="BSL.closeMenu();BSL.openAuth('login')">Connexion</button>`;
+        <button class="mi" type="button" onclick="BSL.closeMenu();BSL.openAuth('login')">Connexion</button>
+        <button class="mi" id="menuInstall" type="button" onclick="BSL.closeMenu();BSL.install()">Installer l'application</button>`;
     }
+    updateInstallUI();
   }
   function toggleMenu(force) {
     const p = $("#userMenu"), b = $("#menuBtn");
@@ -135,30 +138,68 @@
       Adresse : ${esc(s.address || "")}<br>Horaires : ${esc(s.hours || "")}<br>Tél : ${B.phones()}<br>
       <div class="flinks"><a href="apropos.html">À propos</a> · <a href="contact.html">Contact</a> · <a href="localisation.html">Localisation</a> · <a href="faq.html">FAQ</a></div>
       ${B.socials()}
-      <div class="installrow"><button class="btn ghost sm" id="pwaBtn" type="button" hidden onclick="BSL.install()">Installer l'application</button>
-        <span class="muted" id="iosHint" hidden>Sur iPhone : appuyez sur Partager, puis sur « Sur l'écran d'accueil ».</span></div>
+      <div class="installrow"><button class="btn ghost sm" id="pwaBtn" type="button" onclick="BSL.install()">Installer l'application</button></div>
     </div></footer>`;
     updateInstallUI();
   }
 
   /* ---------- Application installable (PWA) ---------- */
+  // Le bouton reste TOUJOURS visible. Si le navigateur ne propose pas l'installation directe
+  // (application déjà installée, iPhone, etc.), un clic affiche les étapes à suivre.
   let deferredInstall = null;
   const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const wasInstalled = () => { try { return localStorage.getItem("bslInstalled") === "1"; } catch (e) { return false; } };
+  const markInstalled = () => { try { localStorage.setItem("bslInstalled", "1"); } catch (e) {} };
+  if (isStandalone()) markInstalled();
+
   function updateInstallUI() {
-    const b = $("#pwaBtn"), h = $("#iosHint");
-    if (!b || !h) return;
-    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    b.hidden = !deferredInstall || isStandalone();
-    h.hidden = !ios || isStandalone();
+    const sa = isStandalone();
+    const b = $("#pwaBtn");
+    if (b) { b.hidden = false; b.disabled = sa; b.textContent = sa ? "Application installée" : "Installer l'application"; }
+    const m = $("#menuInstall");
+    if (m) m.hidden = sa;
   }
   addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstall = e; updateInstallUI(); });
-  addEventListener("appinstalled", () => { deferredInstall = null; updateInstallUI(); });
+  addEventListener("appinstalled", () => { deferredInstall = null; markInstalled(); updateInstallUI(); B.toast("Application installée"); });
+
   B.install = async function () {
-    if (!deferredInstall) return;
-    deferredInstall.prompt();
-    try { await deferredInstall.userChoice; } catch (e) {}
-    deferredInstall = null; updateInstallUI();
+    if (isStandalone()) return;
+    if (deferredInstall) {                       // installation directe proposée par le navigateur
+      const ev = deferredInstall;
+      deferredInstall = null;                    // un événement ne sert qu'une fois
+      ev.prompt();
+      try { await ev.userChoice; } catch (e) {}
+      updateInstallUI();
+      return;
+    }
+    showInstallHelp();                           // sinon : explications selon l'appareil
   };
+
+  function showInstallHelp() {
+    const ua = navigator.userAgent;
+    const ios = /iphone|ipad|ipod/i.test(ua);
+    const android = /android/i.test(ua);
+    let steps;
+    if (ios) steps = ["Ouvrez ce site dans <b>Safari</b>.", "Appuyez sur le bouton <b>Partager</b> (carré avec une flèche).", "Choisissez <b>Sur l'écran d'accueil</b>, puis <b>Ajouter</b>."];
+    else if (android) steps = ["Appuyez sur les <b>trois points</b> en haut à droite de Chrome.", "Choisissez <b>Installer l'application</b> (ou <b>Ajouter à l'écran d'accueil</b>).", "Confirmez avec <b>Installer</b>."];
+    else steps = ["Cliquez sur l'icône d'installation à droite de la barre d'adresse,", "ou ouvrez le menu du navigateur puis choisissez <b>Installer BSL Zénith</b>."];
+    const intro = wasInstalled()
+      ? "<p>L'application semble <b>déjà installée</b> sur cet appareil : cherchez l'icône <b>BSL Zénith</b> sur votre écran d'accueil ou dans la liste de vos applications.</p><p>Si vous l'avez supprimée, installez-la à nouveau :</p>"
+      : "<p>Installez BSL Zénith comme une application, pour l'ouvrir en un appui depuis votre écran d'accueil :</p>";
+    let m = $("#installModal");
+    if (!m) {
+      m = document.createElement("div"); m.id = "installModal"; m.className = "modal"; m.hidden = true;
+      m.addEventListener("click", e => { if (e.target === m) m.hidden = true; });
+      document.addEventListener("keydown", e => { if (e.key === "Escape") m.hidden = true; });
+      document.body.appendChild(m);
+    }
+    m.innerHTML = `<div class="modal-box" role="dialog" aria-modal="true">
+      <button class="x" type="button" aria-label="Fermer" onclick="document.getElementById('installModal').hidden=true">&times;</button>
+      <h2>Installer l'application</h2>${intro}
+      <ol style="padding-left:20px;line-height:1.7">${steps.map(t => `<li>${t}</li>`).join("")}</ol>
+      <button class="btn" type="button" onclick="document.getElementById('installModal').hidden=true">Compris</button></div>`;
+    m.hidden = false;
+  }
 
   // Balises communes ajoutées automatiquement sur toutes les pages publiques
   function injectHead() {
@@ -304,7 +345,7 @@
     B.openAuth("login", "Si cet e-mail est inscrit, un lien de réinitialisation vient d'être envoyé. Pensez à vérifier vos courriers indésirables.");
   };
   B.logout = async function () { await sb.auth.signOut(); location.href = "index.html"; };
-
+ 
   // Clic sur un produit : membre -> fiche ; visiteur -> invitation à s'inscrire
   B.openProduct = function (id) {
     const url = "produit.html?id=" + encodeURIComponent(id);
@@ -312,7 +353,7 @@
     B.pendingUrl = url;
     B.openAuth("signup", "Inscrivez-vous gratuitement pour voir les détails de ce produit.");
   };
-
+ 
   B.noimg = '<svg viewBox="0 0 48 48" width="40%" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color:var(--mu);opacity:.55"><rect x="6" y="9" width="36" height="30" rx="4"/><circle cx="17" cy="20" r="3.5"/><path d="M6 34l10-9 8 7 6-5 12 10"/></svg>';
   // Nombre compact : 1250 -> 1,3 k
   B.n = n => {
@@ -320,7 +361,7 @@
     return n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".", ",").replace(",0", "") + " k" : String(n);
   };
   // Carte produit commune (accueil, catalogue)
-  B.card = function (p) {
+ B.card = function (p) {
     const old = p.old_price != null ? p.old_price : p.price;
     const img = p.cover_url ? `<img src="${esc(p.cover_url)}" alt="${esc(p.name)}" loading="lazy">` : B.noimg;
     const price = p.on_promo
@@ -334,7 +375,7 @@
       ${B.user ? "" : '<span class="lock">Détails après inscription</span>'}</div></button>
       <button class="btn ghost sm addcart" type="button" onclick="BSL.addToCart('${esc(p.id)}', this)">Ajouter au panier</button></div>`;
   };
-
+ 
   /* ---------- Panier ---------- */
   B.cartCount = 0;
   B.setCartCount = function (n) {
@@ -355,7 +396,7 @@
     clearTimeout(B._tt); B._tt = setTimeout(() => t.classList.remove("show"), 3500);
   };
   // Ajoute 1 exemplaire ; retourne la quantité dans le panier (ou null si impossible)
-  B.addToCart = async function (id, btn) {
+ B.addToCart = async function (id, btn) {
     if (!B.user) {
       B.pendingAdd = id;
       B.openAuth("signup", "Inscrivez-vous gratuitement pour utiliser le panier.");
@@ -367,12 +408,12 @@
     const { error } = await sb.from("cart_items").upsert({ user_id: B.user.id, product_id: id, quantity: q }, { onConflict: "user_id,product_id" });
     if (btn) btn.disabled = false;
     if (error) { B.toast(/plein/i.test(error.message) ? "Panier plein (50 articles maximum)." : "Ajout impossible, réessayez."); return null; }
-    if (!cur.data) B.setCartCount(B.cartCount + 1);
+   if (!cur.data) B.setCartCount(B.cartCount + 1);
     B.toast(cur.data ? `Quantité mise à jour : ${q}` : "Ajouté au panier", true);
     if (btn) { const old = btn.textContent; btn.textContent = q > 1 ? `Dans le panier (${q})` : "Ajouté"; setTimeout(() => (btn.textContent = old), 2000); }
     return q;
   };
-   
+ 
   /* ---------- Démarrage ---------- */
   buildModal();
   B.ready = (async () => {
@@ -382,4 +423,3 @@
     loadCartCount();
   })();
 })();
- 

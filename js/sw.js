@@ -1,6 +1,6 @@
 // Service worker BSL Zénith : réseau d'abord, copie locale seulement si hors connexion.
 // Ne touche JAMAIS aux requêtes vers Supabase ou les CDN (autre origine) : aucune donnée privée n'est mise en cache.
-const CACHE = "bsl-v2";
+const CACHE = "bsl-v3";
 const PRECACHE = ["offline.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", e => {

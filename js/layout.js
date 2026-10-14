@@ -4,7 +4,7 @@
 (function () {
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const VERSION = "4 - 12 oct. 2026";
+  const VERSION = "5 - 12 oct. 2026";
   const B = (window.BSL = {
     esc,
     fmt: n => Number(n).toLocaleString("fr-FR") + " FCFA",
@@ -96,11 +96,13 @@
         <a href="profil.html">Mon profil</a>
         ${B.isStaff ? '<a href="admin.html">Administration</a>' : ""}
         <button class="mi" id="menuInstall" type="button" onclick="BSL.closeMenu();BSL.install()">Installer l'application</button>
+        <button class="mi" type="button" onclick="BSL.closeMenu();BSL.share()">Partager l'application</button>
         <button class="mi out" type="button" onclick="BSL.logout()">Déconnexion</button>`;
     } else {
       p.innerHTML = `<button class="mi" type="button" onclick="BSL.closeMenu();BSL.openAuth('signup')">Créer un compte</button>
         <button class="mi" type="button" onclick="BSL.closeMenu();BSL.openAuth('login')">Connexion</button>
-        <button class="mi" id="menuInstall" type="button" onclick="BSL.closeMenu();BSL.install()">Installer l'application</button>`;
+        <button class="mi" id="menuInstall" type="button" onclick="BSL.closeMenu();BSL.install()">Installer l'application</button>
+        <button class="mi" type="button" onclick="BSL.closeMenu();BSL.share()">Partager l'application</button>`;
     }
     updateInstallUI();
   }
@@ -140,7 +142,8 @@
       Adresse : ${esc(s.address || "")}<br>Horaires : ${esc(s.hours || "")}<br>Tél : ${B.phones()}<br>
       <div class="flinks"><a href="apropos.html">À propos</a> · <a href="contact.html">Contact</a> · <a href="localisation.html">Localisation</a> · <a href="faq.html">FAQ</a></div>
       ${B.socials()}
-      <div class="installrow"><button class="btn ghost sm" id="pwaBtn" type="button" onclick="BSL.install()">Installer l'application</button></div>
+      <div class="installrow" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost sm" id="pwaBtn" type="button" onclick="BSL.install()">Installer l'application</button>
+        <button class="btn ghost sm" id="shareBtn" type="button" onclick="BSL.share()">Partager</button></div>
       <p class="muted" style="font-size:12px;margin:10px 0 0">Version ${VERSION}</p>
     </div></footer>`;
     updateInstallUI();
@@ -446,6 +449,43 @@ document.write('<script src="js/layout-app.js"><\/script>');
     return q;
   };
   B.loadCartCount = loadCartCount;
+
+  /* ---------- Partager l'application (lien du site, pour que d'autres l'installent) ---------- */
+  const siteUrl = () => location.origin + location.pathname.replace(/[^/]*$/, "");
+  const SHARE_TEXT = "Installez l'application BSL Zénith (énergie solaire, électronique, télécoms). Ouvrez ce lien dans Chrome, puis appuyez sur « Installer l'application ».";
+
+  B.share = async function () {
+    const url = siteUrl();
+    if (navigator.share) {                          // feuille de partage du téléphone
+      try { await navigator.share({ title: "BSL Zénith", text: SHARE_TEXT, url }); return; }
+      catch (e) { if (e && e.name === "AbortError") return; }
+    }
+    shareFallback(url);                             // sinon : copier le lien ou WhatsApp
+  };
+
+  function shareFallback(url) {
+    let m = $("#shareModal");
+    if (!m) {
+      m = document.createElement("div"); m.id = "shareModal"; m.className = "modal"; m.hidden = true;
+      m.addEventListener("click", e => { if (e.target === m) m.hidden = true; });
+      document.addEventListener("keydown", e => { if (e.key === "Escape") m.hidden = true; });
+      document.body.appendChild(m);
+    }
+    const wa = "https://wa.me/?text=" + encodeURIComponent(SHARE_TEXT + " " + url);
+    m.innerHTML = `<div class="modal-box" role="dialog" aria-modal="true">
+      <button class="x" type="button" aria-label="Fermer" onclick="document.getElementById('shareModal').hidden=true">&times;</button>
+      <h2>Partager l'application</h2>
+      <p>Envoyez ce lien : la personne pourra ouvrir le site puis l'installer sur son téléphone.</p>
+      <label>Lien du site<input id="shareLink" value="${esc(url)}" readonly onfocus="this.select()"></label>
+      <button class="btn" type="button" id="shareCopy">Copier le lien</button>
+      <a class="btn wa" style="margin-top:8px;text-align:center;text-decoration:none" href="${wa}" target="_blank" rel="noopener">Envoyer sur WhatsApp</a></div>`;
+    m.hidden = false;
+    $("#shareCopy").onclick = async () => {
+      try { await navigator.clipboard.writeText(url); }
+      catch (e) { const i = $("#shareLink"); i.select(); try { document.execCommand("copy"); } catch (x) {} }
+      B.toast("Lien copié");
+    };
+  }
 
   buildModal();
   B._partBDone();      // prévient la partie 1 que tout est prêt

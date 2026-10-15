@@ -20,7 +20,7 @@
   /* ----- Favoris : réservé aux membres ----- */
   if (PRESET === "fav" && !BSL.user) {
     $("#ctools").hidden = true;
-    $("#clist").innerHTML = `<div class="card catgate"><h2>⭐ Vos favoris</h2>
+    $("#clist").innerHTML = `<div class="card catgate"><h2>Vos favoris</h2>
       <p class="muted">Connectez-vous pour retrouver ici les produits que vous avez enregistrés.</p>
       <button class="btn" onclick="BSL.openAuth('signup')">Créer mon compte</button>
       <button class="btn ghost" onclick="BSL.openAuth('login')">Connexion</button></div>`;
@@ -41,7 +41,7 @@
     sb.from("categories").select("name").order("position"),
     logged ? sb.from("product_favorites").select("product_id").eq("user_id", BSL.user.id) : Promise.resolve({ data: [] }),
   ]);
-  if (prod.error) { $("#clist").innerHTML = `<p class="empty">Impossible de charger les produits.</p>`; return; }
+  if (prod.error) { $("#clist").innerHTML = `<p class="empty">Impossible de charger les produits.<br><small>${BSL.esc(prod.error.message || "")}</small><br><a href="diagnostic.html" style="text-decoration:underline">Lancer le diagnostic</a></p>`; return; }
   ALL = prod.data || [];
   FAVS = new Set((favs.data || []).map(f => f.product_id));
 
@@ -112,7 +112,7 @@
     $("#count").textContent = `${list.length} produit${list.length > 1 ? "s" : ""}`;
     $("#clist").innerHTML = list.length
       ? `<div class="grid">${list.slice(0, shown).map(BSL.card).join("")}</div>`
-      : `<p class="empty">${PRESET === "fav" ? "Aucun favori pour le moment. Ouvrez un produit et appuyez sur ☆ Favori."
+      : `<p class="empty">${PRESET === "fav" ? "Aucun favori pour le moment. Ouvrez un produit et appuyez sur Favori."
         : q ? "Aucun résultat. Essayez un autre mot." : "Aucun produit pour le moment."}</p>`;
     $("#more").hidden = list.length <= shown;
     logSearch(q, list.length);

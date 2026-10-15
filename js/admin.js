@@ -134,6 +134,7 @@
       </div>
       <div class="admwrap"><nav class="admnav">${links}</nav><main class="admmain" id="acontent"></main></div>`;
     BSLTheme.init();
+    const ns = document.createElement("script"); ns.src = "js/notify.js"; document.body.appendChild(ns);   // cloche de notifications
     const mb = $("#menuBtn"), mp = $("#userMenu");
     const setMenu = open => {
       if (open) mp.style.top = (mb.getBoundingClientRect().bottom + 8) + "px";

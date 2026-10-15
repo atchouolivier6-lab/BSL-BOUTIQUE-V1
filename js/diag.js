@@ -16,6 +16,38 @@
   (async () => {
     const ua = navigator.userAgent;
 
+    // 0. Base de données et comptes (Supabase)
+    const C = window.BSL_CONFIG || {};
+    if (!C.SUPABASE_URL || !C.SUPABASE_KEY) {
+      add("Fichier js/config.js", "bad", "Adresse ou clé de Supabase absente : recollez le contenu complet de js/config.js.");
+    } else {
+      add("Fichier js/config.js", "ok", "Adresse : " + C.SUPABASE_URL.replace("https://", ""));
+      const H = { apikey: C.SUPABASE_KEY };
+      const probe = async (label, path, okText) => {
+        try {
+          const r = await fetch(C.SUPABASE_URL + path, { headers: H, cache: "no-store" });
+          const t = (await r.text()).slice(0, 240);
+          add(label, r.ok ? "ok" : "bad", r.ok ? okText : "Code " + r.status + " : " + t);
+        } catch (e) {
+          add(label, "bad", "Aucune réponse du serveur (" + (e.message || e) + "). Le projet Supabase est peut-être en pause : ouvrez-le et appuyez sur Restore.");
+        }
+      };
+      await probe("Base de données : le serveur répond", "/rest/v1/settings?select=key&limit=1", "Oui.");
+      await probe("Produits visibles avant connexion (v_teaser)", "/rest/v1/v_teaser?select=id&limit=1", "Lecture possible.");
+      await probe("Service de comptes (Auth)", "/auth/v1/health", "Le service répond.");
+      try {
+        const r = await fetch(C.SUPABASE_URL + "/auth/v1/settings", { headers: H, cache: "no-store" });
+        if (r.ok) {
+          const j = await r.json();
+          add("Inscriptions ouvertes", j.disable_signup ? "bad" : "ok", j.disable_signup
+            ? "Les inscriptions sont désactivées. Supabase, Authentication, Sign In / Providers : activez « Allow new users to sign up »." : "Oui.");
+          add("Confirmation par e-mail à l'inscription", "info", j.mailer_autoconfirm
+            ? "Non requise : l'inscription est immédiate."
+            : "Requise : un nouveau membre doit d'abord cliquer sur un e-mail. Pour une inscription immédiate, désactivez « Confirm email » dans Authentication, Sign In / Providers, Email.");
+        }
+      } catch (e) {}
+    }
+
     // 1. Fichier layout.js à jour ?
     try {
       const t = await (await get("js/layout.js")).text();

@@ -4,13 +4,17 @@
 (function () {
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const VERSION = "5 - 12 oct. 2026";
+  const VERSION = "7 - 14 oct. 2026";
   const B = (window.BSL = {
     esc,
     fmt: n => Number(n).toLocaleString("fr-FR") + " FCFA",
     user: null, profile: null, isStaff: false, isAdmin: false,
     shop: {}, pendingUrl: null,
   });
+
+  // Lien principal du site : utilisé pour TOUS les partages (site, produits)
+  B.SITE_URL = ((window.BSL_CONFIG && window.BSL_CONFIG.SITE_URL) || "https://atchouolivier6-lab.github.io/BSL-BOUTIQUE-V1").replace(/\/+$/, "");
+  B.link = path => B.SITE_URL + "/" + (path || "");
 
   /* ---------- Données ---------- */
   async function loadShop() {
@@ -246,6 +250,7 @@
 
 // Charge la partie 2 immédiatement, avant les scripts suivants de la page
 document.write('<script src="js/layout-app.js"><\/script>');
+document.write('<script src="js/notify.js"><\/script>');
 // PARTIE 2/2 de layout.js : fenêtre d'inscription / connexion, cartes produit, panier.
 // Chargé automatiquement par js/layout.js : ne pas l'ajouter dans les pages.
 (function () {
@@ -451,7 +456,7 @@ document.write('<script src="js/layout-app.js"><\/script>');
   B.loadCartCount = loadCartCount;
 
   /* ---------- Partager l'application (lien du site, pour que d'autres l'installent) ---------- */
-  const siteUrl = () => location.origin + location.pathname.replace(/[^/]*$/, "");
+  const siteUrl = () => B.link("");
   const SHARE_TEXT = "Installez l'application BSL Zénith (énergie solaire, électronique, télécoms). Ouvrez ce lien dans Chrome, puis appuyez sur « Installer l'application ».";
 
   B.share = async function () {

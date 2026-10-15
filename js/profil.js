@@ -77,6 +77,12 @@
         </div>
       </div>
 
+      <div class="card" id="ncard">
+        <h2>Notifications</h2>
+        <p class="muted" id="nstate" style="margin-top:0">Vérification...</p>
+        <div id="nbtns"></div>
+      </div>
+
       <div class="card">
         <h2>Changer mon mot de passe</h2>
         <p class="msg" id="wmsg" hidden></p>
@@ -97,6 +103,28 @@
     if (del) del.onclick = removePhoto;
     $("#nform").onsubmit = saveNames;
     $("#wform").onsubmit = savePassword;
+    notifCard();
+  }
+
+  /* ----- Notifications du téléphone ----- */
+  async function notifCard() {
+    const N = window.BSLNotif, st = $("#nstate"), bt = $("#nbtns");
+    if (!st) return;
+    if (!N) { st.textContent = "Les notifications ne sont pas disponibles pour le moment."; return; }
+    const s = await N.status();
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) ? " Sur iPhone, installez d'abord l'application sur l'écran d'accueil." : "";
+    st.textContent = {
+      unsupported: "Ce navigateur ne gère pas les notifications du téléphone." + ios,
+      unconfigured: "Les notifications ne sont pas encore activées sur ce site.",
+      denied: "Les notifications sont bloquées. Autorisez-les dans les réglages du navigateur pour ce site.",
+      off: "Recevez une alerte sur l'écran de votre téléphone dès qu'il y a du nouveau : produits, promotions, annonces.",
+      on: "Les notifications sont activées sur cet appareil.",
+    }[s];
+    bt.innerHTML = s === "off" ? '<button class="btn" id="nOn" type="button">Activer les notifications</button>'
+      : s === "on" ? '<button class="btn ghost" id="nOff" type="button">Désactiver sur cet appareil</button>' : "";
+    const on = $("#nOn"), off = $("#nOff");
+    if (on) on.onclick = async () => { try { await N.enable(); } catch (e) { st.textContent = "Activation impossible : " + (e.message || "réessayez."); return; } notifCard(); };
+    if (off) off.onclick = async () => { await N.disable(); notifCard(); };
   }
 
   /* ----- Photo : recadrage carré 400 px, envoi, mise à jour ----- */

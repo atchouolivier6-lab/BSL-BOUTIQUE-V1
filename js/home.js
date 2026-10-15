@@ -12,7 +12,7 @@
     const wa = BSL.shop.whatsapp_link || "#";
     const first = BSL.profile && BSL.profile.first_name ? BSL.profile.first_name : "";
     if (BSL.user) {
-      $("#heroTitle").textContent = first ? `Bienvenue, ${first} 👋` : "Bienvenue 👋";
+      $("#heroTitle").textContent = first ? `Bienvenue, ${first}` : "Bienvenue";
       $("#heroText").textContent =
         "Merci de faire partie de BSL Zénith. Découvrez tous nos produits, nos nouveautés et nos promotions, et commandez directement sur WhatsApp.";
     } else {
@@ -37,7 +37,7 @@
       sb.from("v_teaser").select("*").order("created_at", { ascending: false }),
     ]);
     renderNews(a.data || []);
-    if (p.error) { $("#plist").innerHTML = `<p class="empty">Impossible de charger les produits.</p>`; return; }
+    if (p.error) { $("#plist").innerHTML = `<p class="empty">Impossible de charger les produits.<br><small>${esc(p.error.message || "")}</small><br><a href="diagnostic.html" style="text-decoration:underline">Lancer le diagnostic</a></p>`; return; }
     ALL = p.data || [];
     renderProducts();
   }

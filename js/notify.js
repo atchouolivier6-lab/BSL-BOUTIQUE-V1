@@ -159,7 +159,28 @@
       })
       .subscribe();
   }
-
+  /* ---------- Invitation automatique à activer les notifications ---------- */
+  async function invite() {
+    try {
+      if ((await status()) !== "off") return;
+      if (Date.now() < +(localStorage.getItem("bsl-invite-until") || 0)) return;
+    } catch (e) { return; }
+    const iosHint = /iphone|ipad|ipod/i.test(navigator.userAgent) && !navigator.standalone;
+    if (iosHint) return;   // iPhone : l'appli doit d'abord être installée sur l'écran d'accueil
+    const d = document.createElement("div");
+    d.style.cssText = "position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:70;max-width:420px;margin:auto;padding:14px;border-radius:16px;background:var(--bg);color:var(--tx);border:1px solid var(--bd);box-shadow:var(--shadow);font-size:14px";
+    d.innerHTML = '<b>Restez informé</b><div style="margin:4px 0 10px;color:var(--mu)">Recevez promotions, nouveautés et messages directement sur votre téléphone.</div>' +
+      '<div style="display:flex;gap:8px"><button id="invOn" style="flex:1;padding:10px;border:0;border-radius:10px;background:var(--pr);color:var(--on-pr);font:inherit;font-weight:700">Activer</button>' +
+      '<button id="invLater" style="padding:10px 14px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx);font:inherit">Plus tard</button></div>';
+    document.body.appendChild(d);
+    d.querySelector("#invLater").onclick = () => {
+      localStorage.setItem("bsl-invite-until", Date.now() + 3 * 864e5); d.remove();
+    };
+    d.querySelector("#invOn").onclick = async () => {
+      try { await enable(); toast("Notifications activées"); } catch (e) { toast("Activation impossible : " + (e.message || "réessayez")); }
+      d.remove();
+    };
+        }
   const waitFor = (fn, ms) => new Promise(res => {
     const t0 = Date.now();
     (function tick() { const v = fn(); if (v || Date.now() - t0 > ms) return res(v); setTimeout(tick, 200); })();

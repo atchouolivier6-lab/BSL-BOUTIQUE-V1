@@ -44,7 +44,16 @@
     if (Notification.permission === "denied") return "denied";
     const reg = await navigator.serviceWorker.getRegistration();
     const sub = reg && (await reg.pushManager.getSubscription());
+    if (sub && !sameKey(sub)) return "off";            // abonnement fait avec une ancienne clé : à refaire
     return sub && Notification.permission === "granted" ? "on" : "off";
+  }
+  function sameKey(sub) {
+    try {
+      const k = sub.options && sub.options.applicationServerKey;
+      if (!k) return true;
+      const a = new Uint8Array(k), b = toU8(CFG.VAPID_PUBLIC_KEY);
+      return a.length === b.length && a.every((v, i) => v === b[i]);
+    } catch (e) { return true; }
   }
   // Attend le service worker au maximum 8 s (évite un bouton qui "ne fait rien")
   function swReady() {
@@ -58,6 +67,7 @@
     if (perm !== "granted") return perm;
     const reg = await swReady();
     let sub = await reg.pushManager.getSubscription();
+    if (sub && !sameKey(sub)) { await sub.unsubscribe(); sub = null; }
     if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toU8(CFG.VAPID_PUBLIC_KEY) });
     const j = sub.toJSON();
     const { error } = await sb.rpc("save_push_subscription", { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth, p_ua: navigator.userAgent.slice(0, 200) });
